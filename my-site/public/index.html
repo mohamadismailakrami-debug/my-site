@@ -4718,7 +4718,19 @@ const res = await fetch(AI_PROXY_URL, {
     })
 });
 
+                const data = await readJsonSafely(res);
+
                 loadingBubble.remove();
+
+                if (!res.ok || data.error) {
+                    const errBubble = document.createElement('div');
+                    errBubble.style.cssText = 'background:rgba(239,68,68,.15);border:1px solid #ef4444;padding:12px;border-radius:10px;max-width:90%;align-self:flex-start;font-size:.82rem;color:#ef4444;line-height:1.7;';
+                    errBubble.textContent = data.error || `خطای سرور (HTTP ${res.status})`;
+                    chatBox.appendChild(errBubble);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    return;
+                }
+
                 const aiBubble = document.createElement('div');
                 aiBubble.style.cssText = 'background:var(--card-inner-bg);border:1px solid var(--border-color);padding:12px;border-radius:10px;max-width:90%;align-self:flex-start;font-size:.82rem;color:var(--text-main);line-height:1.8;white-space:pre-wrap;';
                 const title = provider === 'websearch' ? '🌐 جستجوی وب' : selectedModel;

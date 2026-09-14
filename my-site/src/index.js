@@ -193,6 +193,25 @@ async function callOpenAICompatible(
     }, 500);
   }
 
+  const payload = {
+    model,
+    messages: [
+      {
+        role: 'user',
+        content: message
+      }
+    ],
+    temperature: 0.7
+  };
+
+  // DeepSeek V4 از thinking mode پشتیبانی می‌کند.
+  // برای چت معمولی حالت non-thinking را استفاده می‌کنیم.
+  if (model.startsWith('deepseek-v4-')) {
+    payload.thinking = {
+      type: 'disabled'
+    };
+  }
+
   const res = await fetch(endpoint, {
     method: 'POST',
 
@@ -201,16 +220,7 @@ async function callOpenAICompatible(
       'authorization': `Bearer ${key}`
     },
 
-    body: JSON.stringify({
-      model,
-      messages: [
-        {
-          role: 'user',
-          content: message
-        }
-      ],
-      temperature: 0.7
-    })
+    body: JSON.stringify(payload)
   });
 
   const data = await readJson(res);
@@ -297,7 +307,7 @@ ${context}
 
     answer = await getGeminiText(
       env.GEMINI_API_KEY,
-      'gemini-2.0-flash',
+      'gemini-3.5-flash',
       prompt
     );
 

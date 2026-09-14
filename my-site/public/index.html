@@ -3994,6 +3994,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('user_ai_api_key');
             const savedModel = localStorage.getItem('user_ai_model');
+
+const availableModel = MODEL_CATALOG.some(
+    m => m.id === savedModel
+);
+
+if (availableModel) {
+    select.value = savedModel;
+} else {
+    select.value = 'gemini-3.5-flash';
+}
             if (savedKey) {
                 const keyInput = document.getElementById('aiApiKeyInput');
                 if (keyInput) keyInput.value = savedKey;
@@ -4064,18 +4074,22 @@
             alert('تنظیمات مدل و API Key با موفقیت ذخیره شد.');
         }
 
-        // ---- کاتالوگ مدل‌ها ----
         const MODEL_CATALOG = [
-            { id: 'gemini-2.0-flash',          label: 'Google Gemini 2.0 Flash',       provider: 'gemini' },
-            { id: 'gemini-1.5-flash',          label: 'Google Gemini 1.5 Flash',       provider: 'gemini' },
-            { id: 'llama-3.3-70b-versatile',   label: 'Groq · Llama 3.3 70B',          provider: 'groq' },
-            { id: 'llama-3.1-8b-instant',      label: 'Groq · Llama 3.1 8B (سریع)',    provider: 'groq' },
-            { id: 'deepseek-chat',             label: 'DeepSeek Chat',                 provider: 'deepseek' },
-            { id: 'deepseek-reasoner',         label: 'DeepSeek Reasoner',              provider: 'deepseek' },
-            { id: 'gpt-4o-mini',               label: 'OpenAI GPT-4o mini',             provider: 'openai' },
-            { id: 'claude-3-5-haiku',           label: 'Anthropic Claude 3.5 Haiku',    provider: 'anthropic' },
-            { id: 'web-search',                label: '🌐 جستجوی وب',                    provider: 'websearch' }
-        ];
+    { id: 'gemini-3.5-flash',       label: 'Google Gemini 3.5 Flash',        provider: 'gemini' },
+    { id: 'gemini-3.1-flash-lite',  label: 'Google Gemini 3.1 Flash Lite',   provider: 'gemini' },
+    { id: 'gemini-2.5-flash',       label: 'Google Gemini 2.5 Flash',        provider: 'gemini' },
+
+    { id: 'openai/gpt-oss-120b',    label: 'Groq · GPT-OSS 120B',             provider: 'groq' },
+    { id: 'openai/gpt-oss-20b',     label: 'Groq · GPT-OSS 20B (سریع)',      provider: 'groq' },
+
+    { id: 'deepseek-v4-flash',      label: 'DeepSeek V4 Flash',               provider: 'deepseek' },
+    { id: 'deepseek-v4-pro',        label: 'DeepSeek V4 Pro',                 provider: 'deepseek' },
+
+    { id: 'gpt-4o-mini',             label: 'OpenAI GPT-4o mini',              provider: 'openai' },
+    { id: 'claude-3-5-haiku',        label: 'Anthropic Claude 3.5 Haiku',     provider: 'anthropic' },
+
+    { id: 'web-search',              label: '🌐 جستجوی وب',                    provider: 'websearch' }
+];
 
         // این سرویس‌ها از طریق /api/ai-proxy و کلیدهای Secret سمت Cloudflare اجرا می‌شوند.
         const ADMIN_BACKED_PROVIDERS = ['gemini', 'groq', 'deepseek', 'websearch'];

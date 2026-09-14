@@ -4,6 +4,8 @@
 // GEMINI_API_KEY
 // GROQ_API_KEY
 // DEEPSEEK_API_KEY
+// ANTHROPIC_API_KEY
+// OPENROUTER_API_KEY
 // BRAVE_SEARCH_API_KEY (اختیاری؛ برای جستجوی وب دقیق‌تر)
 
 const JSON_HEADERS = {
@@ -92,6 +94,14 @@ async function handleAiProxy(request, env) {
   return await callOpenAICompatible(
     env.DEEPSEEK_API_KEY,
     'https://api.deepseek.com/chat/completions',
+    model,
+    message
+  );
+}
+
+if (provider === 'openrouter') {
+  return await callOpenRouter(
+    env.OPENROUTER_API_KEY,
     model,
     message
   );
@@ -188,6 +198,61 @@ async function callGemini(key, model, message) {
 // ==============================
 // GROQ / DEEPSEEK
 // ==============================
+
+async function callOpenRouter(key, model, message) {
+  if (!key) {
+    return json({
+      error: 'OPENROUTER_API_KEY روی Cloudflare تنظیم نشده است.'
+    }, 500);
+  }
+
+  const res = await fetch(
+    'https://openrouter.ai/api/v1/chat/completions',
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'authorization': `Bearer ${key}`,
+        'http-referer': 'https://mohamad.mohamad-5da.workers.dev/',
+        'x-title': 'PERAMT'
+      },
+      body: JSON.stringify({
+        model: model || 'openrouter/auto',
+        messages: [
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        temperature: 0.7
+      })
+    }
+  );
+
+  const data = await readJson(res);
+
+  if (!res.ok || data.error) {
+    return json({
+      error:
+        data.error?.message ||
+        `OpenRouter HTTP ${res.status}`
+    }, 502);
+  }
+
+  const text =
+    data.choices?.[0]?.message?.content || '';
+
+  if (!text) {
+    return json({
+      error: 'OpenRouter پاسخ متنی برنگرداند.'
+    }, 502);
+  }
+
+  return json({
+    text,
+    model: data.model || model || 'openrouter/auto'
+  });
+}
 
 async function callAnthropic(key, model, message) {
   if (!key) {

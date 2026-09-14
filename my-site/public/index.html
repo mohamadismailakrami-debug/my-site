@@ -4870,14 +4870,22 @@ if (availableModel) {
     { id: 'deepseek-v4-flash',      label: 'DeepSeek V4 Flash',               provider: 'deepseek' },
     { id: 'deepseek-v4-pro',        label: 'DeepSeek V4 Pro',                 provider: 'deepseek' },
 
-    { id: 'gpt-4o-mini',             label: 'OpenAI GPT-4o mini',              provider: 'openai' },
-    { id: 'claude-3-5-haiku',        label: 'Anthropic Claude 3.5 Haiku',     provider: 'anthropic' },
+   { id: 'gpt-4o-mini',             label: 'OpenAI GPT-4o mini',             provider: 'openai' },
 
-    { id: 'web-search',              label: '🌐 جستجوی وب',                    provider: 'websearch' }
+{ id: 'claude-sonnet-5',         label: 'Anthropic Claude Sonnet 5',       provider: 'anthropic' },
+{ id: 'claude-haiku-4-5-20251001', label: 'Anthropic Claude Haiku 4.5',    provider: 'anthropic' },
+
+{ id: 'web-search',              label: '🌐 جستجوی وب',                    provider: 'websearch' }
 ];
 
         // این سرویس‌ها از طریق /api/ai-proxy و کلیدهای Secret سمت Cloudflare اجرا می‌شوند.
-        const ADMIN_BACKED_PROVIDERS = ['gemini', 'groq', 'deepseek', 'websearch'];
+        const ADMIN_BACKED_PROVIDERS = [
+    'gemini',
+    'groq',
+    'deepseek',
+    'anthropic',
+    'websearch'
+];
 
         function isProviderEnabled(provider) {
             if (ADMIN_BACKED_PROVIDERS.includes(provider)) return true;

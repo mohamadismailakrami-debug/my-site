@@ -89,17 +89,25 @@ async function handleAiProxy(request, env) {
     }
 
     if (provider === 'deepseek') {
-      return await callOpenAICompatible(
-        env.DEEPSEEK_API_KEY,
-        'https://api.deepseek.com/chat/completions',
-        model,
-        message
-      );
-    }
+  return await callOpenAICompatible(
+    env.DEEPSEEK_API_KEY,
+    'https://api.deepseek.com/chat/completions',
+    model,
+    message
+  );
+}
 
-    if (provider === 'websearch') {
-      return await handleWebSearch(env, message);
-    }
+if (provider === 'anthropic') {
+  return await callAnthropic(
+    env.ANTHROPIC_API_KEY,
+    model,
+    message
+  );
+}
+
+if (provider === 'websearch') {
+  return await handleWebSearch(env, message);
+}
 
     return json({
       error: 'این سرویس در پروکسی فعال نیست.'
@@ -180,6 +188,54 @@ async function callGemini(key, model, message) {
 // ==============================
 // GROQ / DEEPSEEK
 // ==============================
+
+async function callAnthropic(key, model, message) {
+  if (!key) {
+    return json({
+      error: 'ANTHROPIC_API_KEY روی Cloudflare تنظیم نشده است.'
+    }, 500);
+  }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 2048,
+      messages: [
+        {
+          role: 'user',
+          content: message
+        }
+      ]
+    })
+  });
+
+  const data = await readJson(res);
+
+  if (!res.ok || data.error) {
+    return json({
+      error: data.error?.message || `Anthropic HTTP ${res.status}`
+    }, 502);
+  }
+
+  const text = data.content
+    ?.filter(block => block.type === 'text')
+    ?.map(block => block.text || '')
+    ?.join('') || '';
+
+  if (!text) {
+    return json({
+      error: 'Claude پاسخ متنی برنگرداند.'
+    }, 502);
+  }
+
+  return json({ text });
+}
 
 async function callOpenAICompatible(
   key,

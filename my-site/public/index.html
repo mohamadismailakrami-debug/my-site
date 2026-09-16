@@ -1064,17 +1064,22 @@
 }
 
 .ai-sidebar-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 120;
     width: 34px;
     height: 34px;
-    border: none;
+    border: 1px solid var(--gpt-border);
     border-radius: 8px;
-    background: transparent;
+    background: var(--gpt-sidebar);
     color: var(--gpt-muted);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     transition: all 0.15s ease;
 }
 
@@ -1131,55 +1136,180 @@
     color: var(--gpt-muted);
 }
 
-.ai-model-selector-wrap {
+/* ==== انتخاب مدل هوش مصنوعی: داخل کادر شناور چت (composer) ====
+   دو سطحی: ابتدا لیست سرویس‌های اصلی (جمنای، چت‌جی‌پی‌تی، کلود، گراک، دیپ‌سیک...)
+   و با کلیک روی هرکدام، زیرمجموعه مدل‌های همان سرویس باز می‌شود. */
+.ai-model-pill-wrap {
     position: relative;
-    width: 230px;
-    flex-shrink: 0;
 }
 
-.ai-model-selector-wrap input {
-    width: 100%;
-    box-sizing: border-box;
-    background: transparent;
-    border: 1px solid transparent;
+.ai-model-pill {
+    height: 34px;
+    max-width: 190px;
+    border: 1px solid var(--gpt-border);
     border-radius: 20px;
-    padding: 8px 14px 8px 30px;
+    background: transparent;
     color: var(--gpt-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 12px;
     font-family: inherit;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 600;
-    outline: none;
     transition: 0.15s;
 }
 
-.ai-model-selector-wrap input:hover {
+.ai-model-pill:hover {
     background: var(--gpt-hover);
 }
 
-.ai-model-selector-wrap input:focus {
-    background: var(--gpt-hover);
-    border-color: var(--gpt-border);
+.ai-model-pill span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.ai-model-selector-wrap::after {
-    content: '\f078';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
+.ai-model-pill-caret {
+    font-size: 0.55rem;
+    color: var(--gpt-muted);
+    margin-right: auto;
+    flex-shrink: 0;
+}
+
+.ai-model-dropdown {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    width: 280px;
+    max-height: 360px;
+    display: flex;
+    flex-direction: column;
+    background: var(--gpt-sidebar);
+    border: 1px solid var(--gpt-border);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), var(--gpt-shadow);
+    z-index: 150;
+    overflow: hidden;
+}
+
+.ai-model-dropdown-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gpt-border);
+    color: var(--gpt-muted);
+    flex-shrink: 0;
+}
+
+.ai-model-dropdown-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--gpt-text);
+    font-family: inherit;
+    font-size: 0.78rem;
+}
+
+.ai-model-dropdown-list {
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.ai-provider-row {
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 2px;
+}
+
+.ai-provider-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gpt-text);
+    transition: 0.15s;
+}
+
+.ai-provider-header:hover {
+    background: var(--gpt-hover);
+}
+
+.ai-provider-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.68rem;
+    flex-shrink: 0;
+}
+
+.ai-provider-header .ai-provider-count {
+    margin-right: auto;
+    font-size: 0.66rem;
+    font-weight: 400;
+    color: var(--gpt-muted);
+}
+
+.ai-provider-header .ai-provider-caret {
     font-size: 0.6rem;
     color: var(--gpt-muted);
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
+    transition: transform 0.15s;
 }
 
-#aiModelCatalogList {
-    background: var(--gpt-sidebar) !important;
-    border-color: var(--gpt-border) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), var(--gpt-shadow) !important;
-    padding: 4px !important;
+.ai-provider-row.expanded .ai-provider-caret {
+    transform: rotate(180deg);
+}
+
+.ai-provider-models {
+    display: none;
+    flex-direction: column;
+    padding: 2px 4px 6px 4px;
+}
+
+.ai-provider-row.expanded .ai-provider-models {
+    display: flex;
+}
+
+.ai-model-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 10px 7px 30px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    cursor: pointer;
+    color: var(--gpt-text);
+}
+
+.ai-model-row:hover {
+    background: var(--gpt-hover);
+}
+
+.ai-model-row.selected {
+    background: rgba(168, 85, 247, 0.15);
+}
+
+.ai-model-row.locked {
+    cursor: not-allowed;
+    color: var(--gpt-muted);
+}
+
+.ai-model-row .ai-model-row-status {
+    font-size: 0.62rem;
+    font-weight: bold;
+    flex-shrink: 0;
 }
 
 .ai-workspace-chat {
@@ -1531,8 +1661,12 @@
         grid-template-columns: 1fr;
     }
 
-    .ai-model-selector-wrap {
-        width: 160px;
+    .ai-model-pill {
+        max-width: 130px;
+    }
+
+    .ai-model-dropdown {
+        width: 240px;
     }
 
     .ai-workspace-chat {
@@ -1926,7 +2060,7 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; align-items: start;">
                     <div class="form-group" style="margin-bottom:0;">
                         <label>کلید اختصاصی API Key (اختیاری)</label>
-                        <input type="password" id="aiApiKeyInput" placeholder="کلید شخصی خود را وارد کنید (مثلا: AIzaSy... یا sk-... یا sk-ant-...)" oninput="autoDetectAiModel(); renderModelCatalog();">
+                        <input type="password" id="aiApiKeyInput" placeholder="کلید شخصی خود را وارد کنید (مثلا: AIzaSy... یا sk-... یا sk-ant-...)" oninput="autoDetectAiModel(); renderModelDropdown();">
                         <div id="aiKeyDetectHint" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; min-height: 1em;"></div>
                         <div style="font-size:0.7rem; color: var(--text-muted); margin-top:6px; line-height:1.6;">
                             وارد کردن کلید فقط برای استفاده از مدل‌های <strong>OpenAI</strong> و <strong>Claude</strong> لازم است. بقیه‌ی مدل‌ها (از بخش انتخاب مدل کنار چت) بدون نیاز به کلید شخصی در دسترس‌اند.
@@ -1943,6 +2077,12 @@
 
             <!-- AI CHAT WORKSPACE -->
 <div class="ai-workspace" id="aiWorkspaceRoot">
+
+    <!-- دکمه همبرگری برای باز/بسته کردن کادر سمت راست؛ همیشه در گوشه بالا-راست همان کادر ثابت می‌ماند
+         تا وقتی کادر بسته شد هم بشود دوباره از همان‌جا بازش کرد -->
+    <button type="button" class="ai-sidebar-toggle" onclick="toggleAiSidebar()" title="باز/بسته کردن پنل کناری">
+        <i class="fa-solid fa-bars"></i>
+    </button>
 
     <!-- SIDEBAR -->
     <aside class="ai-workspace-sidebar">
@@ -2001,32 +2141,9 @@
         <!-- HEADER -->
         <div class="ai-workspace-header">
 
-            <button type="button" class="ai-sidebar-toggle" onclick="toggleAiSidebar()" title="باز/بسته کردن پنل کناری">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-
             <div class="ai-workspace-header-title">
                 <strong>گفتگوی جدید</strong>
                 <span>با هوش مصنوعی PERAMT گفتگو کنید</span>
-            </div>
-
-            <div class="ai-model-selector-wrap">
-
-                <input
-                    type="text"
-                    id="aiModelSearchInput"
-                    placeholder="انتخاب مدل هوش مصنوعی..."
-                    oninput="renderModelCatalog()"
-                    onfocus="showModelCatalog()"
-                >
-
-                <div
-                    id="aiModelCatalogList"
-                    style="display:none; position:absolute; top:100%; right:0; left:0; z-index:50; max-height:240px; overflow-y:auto; border:1px solid var(--border-color); border-radius:10px; margin-top:6px; background:var(--modal-bg); box-shadow:0 10px 30px rgba(0,0,0,.25);"
-                ></div>
-
-                <input type="hidden" id="aiModelSelect" value="gemini-3.5-flash">
-
             </div>
 
         </div>
@@ -2076,6 +2193,30 @@
                     <div class="ai-composer-toolbar">
 
                         <div class="ai-composer-tools">
+
+                            <!-- انتخاب مدل هوش مصنوعی: منتقل‌شده به داخل کادر شناور چت -->
+                            <div class="ai-model-pill-wrap" id="aiModelPillWrap">
+                                <button type="button" class="ai-model-pill" onclick="toggleModelDropdown(event)" title="انتخاب مدل هوش مصنوعی">
+                                    <i class="fa-solid fa-microchip"></i>
+                                    <span id="aiModelPillLabel">انتخاب مدل</span>
+                                    <i class="fa-solid fa-chevron-up ai-model-pill-caret"></i>
+                                </button>
+
+                                <div id="aiModelDropdown" class="ai-model-dropdown" style="display:none;">
+                                    <div class="ai-model-dropdown-search">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        <input
+                                            type="text"
+                                            id="aiModelSearchInput"
+                                            placeholder="جستجوی سرویس یا مدل..."
+                                            oninput="renderModelDropdown()"
+                                        >
+                                    </div>
+                                    <div id="aiModelDropdownList" class="ai-model-dropdown-list"></div>
+                                </div>
+
+                                <input type="hidden" id="aiModelSelect" value="gemini-3.5-flash">
+                            </div>
 
                             <!-- فعلاً فقط ظاهر؛ عملکرد فایل را در مرحله بعد اضافه می‌کنیم -->
                             <button
@@ -4864,10 +5005,9 @@ const availableModel = MODEL_CATALOG.some(
     m => m.id === savedModel
 );
 
-if (availableModel) {
-    select.value = savedModel;
-} else {
-    select.value = 'gemini-3.5-flash';
+const modelSelectEl = document.getElementById('aiModelSelect');
+if (modelSelectEl) {
+    modelSelectEl.value = availableModel ? savedModel : 'gemini-3.5-flash';
 }
             if (savedKey) {
                 const keyInput = document.getElementById('aiApiKeyInput');
@@ -4916,9 +5056,9 @@ if (availableModel) {
             const provider = detectProviderFromKey(key);
 
             const defaults = {
-                anthropic: { value: 'claude-3-5-sonnet', label: 'Anthropic (Claude) تشخیص داده شد ✅' },
-                gemini:    { value: 'gemini-1.5-pro',     label: 'Google (Gemini) تشخیص داده شد ✅' },
-                openai:    { value: 'gpt-4o',             label: 'OpenAI (GPT) تشخیص داده شد ✅' }
+                anthropic: { value: 'claude-sonnet-5',    label: 'Anthropic (Claude) تشخیص داده شد ✅' },
+                gemini:    { value: 'gemini-3.5-pro',      label: 'Google (Gemini) تشخیص داده شد ✅' },
+                openai:    { value: 'gpt-4o',              label: 'OpenAI (GPT) تشخیص داده شد ✅' }
             };
 
             if (provider && defaults[provider]) {
@@ -4949,24 +5089,68 @@ if (availableModel) {
             alert('تنظیمات مدل و API Key با موفقیت ذخیره شد.');
         }
 
-        const MODEL_CATALOG = [
-    { id: 'gemini-3.5-flash',       label: 'Google Gemini 3.5 Flash',        provider: 'gemini' },
-    { id: 'gemini-3.1-flash-lite',  label: 'Google Gemini 3.1 Flash Lite',   provider: 'gemini' },
-    { id: 'gemini-2.5-flash',       label: 'Google Gemini 2.5 Flash',        provider: 'gemini' },
+        // فهرست سرویس‌های اصلی هوش مصنوعی و زیرمجموعهٔ مدل‌های هرکدام.
+        // نکته: نام دقیق برخی مدل‌های غیر-Anthropic (Gemini / GPT / DeepSeek / Groq) در آیندهٔ نزدیک
+        // ممکن است توسط سازنده‌شان تغییر کند؛ در صورت نیاز شناسهٔ (id) هرکدام را با مستندات رسمی
+        // همان سرویس یا پروکسی خودتان (api/ai-proxy) هماهنگ کنید.
+        const AI_PROVIDERS = [
+            {
+                id: 'gemini', label: 'Google Gemini', icon: 'fa-gem', color: '#2563eb',
+                models: [
+                    { id: 'gemini-3.5-pro',       label: 'Gemini 3.5 Pro' },
+                    { id: 'gemini-3.5-flash',      label: 'Gemini 3.5 Flash' },
+                    { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite' },
+                    { id: 'gemini-2.5-pro',        label: 'Gemini 2.5 Pro' },
+                    { id: 'gemini-2.5-flash',      label: 'Gemini 2.5 Flash' },
+                    { id: 'gemini-2.0-flash',      label: 'Gemini 2.0 Flash' }
+                ]
+            },
+            {
+                id: 'openai', label: 'OpenAI · ChatGPT', icon: 'fa-comment-dots', color: '#10a37f',
+                models: [
+                    { id: 'gpt-4o',        label: 'GPT-4o' },
+                    { id: 'gpt-4o-mini',   label: 'GPT-4o mini' },
+                    { id: 'gpt-4.1',       label: 'GPT-4.1' },
+                    { id: 'gpt-4.1-mini',  label: 'GPT-4.1 mini' },
+                    { id: 'o4-mini',       label: 'o4-mini (استدلالی)' }
+                ]
+            },
+            {
+                id: 'anthropic', label: 'Anthropic · Claude', icon: 'fa-brain', color: '#d97757',
+                models: [
+                    { id: 'claude-opus-5',               label: 'Claude Opus 5' },
+                    { id: 'claude-sonnet-5',              label: 'Claude Sonnet 5' },
+                    { id: 'claude-haiku-4-5-20251001',    label: 'Claude Haiku 4.5' }
+                ]
+            },
+            {
+                id: 'groq', label: 'Groq', icon: 'fa-bolt', color: '#f97316',
+                models: [
+                    { id: 'openai/gpt-oss-120b',           label: 'GPT-OSS 120B' },
+                    { id: 'openai/gpt-oss-20b',             label: 'GPT-OSS 20B (سریع)' },
+                    { id: 'llama-3.3-70b-versatile',        label: 'Llama 3.3 70B' }
+                ]
+            },
+            {
+                id: 'deepseek', label: 'DeepSeek', icon: 'fa-magnifying-glass', color: '#6366f1',
+                models: [
+                    { id: 'deepseek-v4-pro',   label: 'DeepSeek V4 Pro' },
+                    { id: 'deepseek-v4-flash', label: 'DeepSeek V4 Flash' },
+                    { id: 'deepseek-r1',       label: 'DeepSeek R1 (استدلالی)' }
+                ]
+            },
+            {
+                id: 'websearch', label: 'جستجوی وب', icon: 'fa-globe', color: '#06b6d4',
+                models: [
+                    { id: 'web-search', label: 'جستجوی وب زنده' }
+                ]
+            }
+        ];
 
-    { id: 'openai/gpt-oss-120b',    label: 'Groq · GPT-OSS 120B',             provider: 'groq' },
-    { id: 'openai/gpt-oss-20b',     label: 'Groq · GPT-OSS 20B (سریع)',      provider: 'groq' },
-
-    { id: 'deepseek-v4-flash',      label: 'DeepSeek V4 Flash',               provider: 'deepseek' },
-    { id: 'deepseek-v4-pro',        label: 'DeepSeek V4 Pro',                 provider: 'deepseek' },
-
-   { id: 'gpt-4o-mini',             label: 'OpenAI GPT-4o mini',             provider: 'openai' },
-
-{ id: 'claude-sonnet-5',         label: 'Anthropic Claude Sonnet 5',       provider: 'anthropic' },
-{ id: 'claude-haiku-4-5-20251001', label: 'Anthropic Claude Haiku 4.5',    provider: 'anthropic' },
-
-{ id: 'web-search',              label: '🌐 جستجوی وب',                    provider: 'websearch' }
-];
+        // نسخهٔ مسطح (flat) برای سازگاری با بقیهٔ کدهایی که MODEL_CATALOG را جستجو می‌کنند
+        const MODEL_CATALOG = AI_PROVIDERS.flatMap(
+            p => p.models.map(m => ({ ...m, provider: p.id }))
+        );
 
         // این سرویس‌ها از طریق /api/ai-proxy و کلیدهای Secret سمت Cloudflare اجرا می‌شوند.
         const ADMIN_BACKED_PROVIDERS = [
@@ -4983,47 +5167,86 @@ if (availableModel) {
             return detectProviderFromKey(key) === provider;
         }
 
-        function showModelCatalog() {
-            const list = document.getElementById('aiModelCatalogList');
-            if (list) { list.style.display = 'block'; renderModelCatalog(); }
+        // ---------------- منوی دوسطحی انتخاب مدل (سرویس ← مدل) ---------------- //
+        let expandedAiProviderId = null;
+
+        function toggleModelDropdown(e) {
+            e?.stopPropagation();
+            const dropdown = document.getElementById('aiModelDropdown');
+            if (!dropdown) return;
+            const willOpen = dropdown.style.display === 'none' || !dropdown.style.display;
+            if (willOpen) {
+                const current = MODEL_CATALOG.find(m => m.id === document.getElementById('aiModelSelect')?.value);
+                expandedAiProviderId = current ? current.provider : null;
+                dropdown.style.display = 'flex';
+                renderModelDropdown();
+                const searchInput = document.getElementById('aiModelSearchInput');
+                searchInput?.focus();
+            } else {
+                dropdown.style.display = 'none';
+            }
         }
 
-        function hideModelCatalog() {
-            const list = document.getElementById('aiModelCatalogList');
-            if (list) list.style.display = 'none';
+        function closeModelDropdown() {
+            const dropdown = document.getElementById('aiModelDropdown');
+            if (dropdown) dropdown.style.display = 'none';
         }
 
         document.addEventListener('click', (e) => {
-            const wrapper = document.getElementById('aiModelSearchInput');
-            const list = document.getElementById('aiModelCatalogList');
-            if (!wrapper || !list) return;
-            if (!wrapper.contains(e.target) && !list.contains(e.target)) hideModelCatalog();
+            const wrap = document.getElementById('aiModelPillWrap');
+            if (!wrap) return;
+            if (!wrap.contains(e.target)) closeModelDropdown();
         });
 
-        function renderModelCatalog() {
-            const list = document.getElementById('aiModelCatalogList');
+        function toggleProviderExpand(providerId) {
+            expandedAiProviderId = (expandedAiProviderId === providerId) ? null : providerId;
+            renderModelDropdown();
+        }
+
+        function renderModelDropdown() {
+            const list = document.getElementById('aiModelDropdownList');
             const searchInput = document.getElementById('aiModelSearchInput');
             if (!list) return;
 
             const term = searchInput ? searchInput.value.trim().toLowerCase() : '';
             const currentModel = document.getElementById('aiModelSelect')?.value;
-            const filtered = MODEL_CATALOG.filter(m =>
-                !term || m.label.toLowerCase().includes(term) || m.id.toLowerCase().includes(term) || m.provider.toLowerCase().includes(term)
-            );
 
-            if (!filtered.length) {
-                list.innerHTML = `<div style="padding:10px;font-size:.78rem;color:var(--text-muted)">موردی یافت نشد.</div>`;
+            const providersToShow = AI_PROVIDERS.map(p => {
+                const matchedModels = p.models.filter(m =>
+                    !term ||
+                    p.label.toLowerCase().includes(term) ||
+                    m.label.toLowerCase().includes(term) ||
+                    m.id.toLowerCase().includes(term)
+                );
+                return { provider: p, models: matchedModels };
+            }).filter(x => x.models.length);
+
+            if (!providersToShow.length) {
+                list.innerHTML = `<div style="padding:14px;text-align:center;font-size:.78rem;color:var(--text-muted)">موردی یافت نشد.</div>`;
                 return;
             }
 
-            list.innerHTML = filtered.map(m => {
-                const enabled = isProviderEnabled(m.provider);
-                const selected = m.id === currentModel;
-                const bg = selected ? 'rgba(168,85,247,.15)' : 'transparent';
-                const click = enabled ? `selectAiModel('${m.id}')` : `notifyModelLocked('${m.provider}')`;
-                return `<div onclick="${click}" style="padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:${enabled?'pointer':'not-allowed'};background:${bg};border-bottom:1px solid var(--border-color);font-size:.78rem">
-                    <span style="color:${enabled?'var(--text-main)':'var(--text-muted)'}">${m.label}</span>
-                    <span style="color:${enabled?'#10b981':'var(--text-muted)'};font-size:.68rem;font-weight:bold">${enabled?'● فعال':'○ نیاز به کلید'}</span>
+            list.innerHTML = providersToShow.map(({ provider, models }) => {
+                const isExpanded = term ? true : (expandedAiProviderId === provider.id);
+
+                const modelsHtml = models.map(m => {
+                    const enabled = isProviderEnabled(provider.id);
+                    const selected = m.id === currentModel;
+                    const click = enabled ? `selectAiModel('${m.id}')` : `notifyModelLocked('${provider.id}')`;
+                    return `<div class="ai-model-row ${selected ? 'selected' : ''} ${enabled ? '' : 'locked'}" onclick="${click}">
+                        <span>${escapeHtml(m.label)}</span>
+                        <span class="ai-model-row-status" style="color:${enabled ? '#10b981' : 'var(--text-muted)'}">${enabled ? '● فعال' : '○ نیاز به کلید'}</span>
+                    </div>`;
+                }).join('');
+
+                return `<div class="ai-provider-row ${isExpanded ? 'expanded' : ''}">
+                    <div class="ai-provider-header" onclick="toggleProviderExpand('${provider.id}')">
+                        <span class="ai-provider-icon" style="background:${provider.color};"><i class="fa-solid ${provider.icon}"></i></span>
+                        <span>${escapeHtml(provider.label)}</span>
+                        <span class="ai-provider-count">${models.length} مدل</span>
+                        <i class="fa-solid fa-chevron-down ai-provider-caret"></i>
+                    </div>
+                    <div class="ai-provider-models">${modelsHtml}</div>
                 </div>`;
             }).join('');
         }
@@ -5032,12 +5255,17 @@ if (availableModel) {
             const select = document.getElementById('aiModelSelect');
             if (select) select.value = modelId;
             const model = MODEL_CATALOG.find(m => m.id === modelId);
+            const provider = AI_PROVIDERS.find(p => p.id === model?.provider);
+
             const labelEl = document.getElementById('aiSelectedModelLabel');
             if (labelEl) labelEl.textContent = model ? model.label : '';
-            const searchInput = document.getElementById('aiModelSearchInput');
-            if (searchInput) searchInput.value = '';
-            renderModelCatalog();
-            hideModelCatalog();
+
+            const pillLabel = document.getElementById('aiModelPillLabel');
+            if (pillLabel) pillLabel.textContent = model ? model.label : 'انتخاب مدل';
+
+            expandedAiProviderId = provider ? provider.id : null;
+            renderModelDropdown();
+            closeModelDropdown();
         }
 
         function notifyModelLocked(provider) {

@@ -2055,22 +2055,26 @@
             <!-- باکس تنظیمات کلید API -->
             <div id="aiApiKeyPanel" class="tools-box" style="margin-bottom: 20px; display: none; background: var(--card-inner-bg);">
                 <div style="font-size:0.8rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.6;">
-                    💡 <strong>راهنمای کلید API:</strong> اگر کلید اختصاصی خود را وارد کنید، درخواست‌ها مستقیم با سهمیه شخصی شما پردازش می‌شوند. در غیر این صورت، از کلید عمومی که توسط مدیر قرار داده شده استفاده خواهد شد.
+                    💡 <strong>راهنمای کلید API:</strong> کلید اختصاصی خود (OpenAI یا Google Gemini) را وارد کنید تا اعتبار آن بررسی شده و مدل‌های قابل دسترسی به شما نمایش داده شوند.
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; align-items: start;">
                     <div class="form-group" style="margin-bottom:0;">
-                        <label>کلید اختصاصی API Key (اختیاری)</label>
-                        <input type="password" id="aiApiKeyInput" placeholder="کلید شخصی خود را وارد کنید (مثلا: AIzaSy... یا sk-... یا sk-ant-...)" oninput="autoDetectAiModel(); renderModelDropdown();">
-                        <div id="aiKeyDetectHint" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; min-height: 1em;"></div>
-                        <div style="font-size:0.7rem; color: var(--text-muted); margin-top:6px; line-height:1.6;">
-                            وارد کردن کلید فقط برای استفاده از مدل‌های <strong>OpenAI</strong> و <strong>Claude</strong> لازم است. بقیه‌ی مدل‌ها (از بخش انتخاب مدل کنار چت) بدون نیاز به کلید شخصی در دسترس‌اند.
+                        <label>کلید اختصاصی API Key</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="aiApiKeyInput" placeholder="کلید خود را وارد کنید (AIzaSy... یا sk-...)" oninput="autoDetectAiModel(); renderModelCatalog();" style="flex: 1;">
+                            <button type="button" class="btn-register" onclick="validateUserApiKey()" style="height: auto; padding: 0 14px; white-space: nowrap;">
+                                <i class="fa-solid fa-key"></i> اعتبار سنجی کلید
+                            </button>
                         </div>
-                    </div>
-
-                    <div>
-                        <button type="button" class="btn-register" onclick="saveAiSettings()" style="width: 100%; height: 40px; justify-content: center;">
-                            ذخیره کلید
-                        </button>
+                        <div id="aiKeyDetectHint" style="font-size: 0.75rem; margin-top: 6px; min-height: 1.2em; font-weight: bold;"></div>
+                        
+                        <!-- لیست مدل‌های در دسترس بر اساس کلید -->
+                        <div id="apiAvailableModelsWrapper" style="display: none; margin-top: 10px; background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+                            <div style="font-size: 0.75rem; color: #a855f7; font-weight: bold; margin-bottom: 6px;">
+                                <i class="fa-solid fa-circle-check"></i> مدل‌های در دسترس با این کلید:
+                            </div>
+                            <ul id="apiAvailableModelsList" style="font-size: 0.73rem; color: var(--text-main); list-style: none; padding-right: 5px; display: flex; flex-wrap: wrap; gap: 6px;"></ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5590,6 +5594,86 @@ const res = await fetch(AI_PROXY_URL, {
             const panel = document.getElementById('aiApiKeyPanel');
             if (panel) {
                 panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // اعتبارسنجی کلید API و دریافتی مدل‌های مجاز
+        async function validateUserApiKey() {
+            const keyInput = document.getElementById('aiApiKeyInput');
+            const hint = document.getElementById('aiKeyDetectHint');
+            const modelsWrapper = document.getElementById('apiAvailableModelsWrapper');
+            const modelsList = document.getElementById('apiAvailableModelsList');
+
+            if (!keyInput || !hint || !modelsWrapper || !modelsList) return;
+
+            const apiKey = keyInput.value.trim();
+            if (!apiKey) {
+                hint.style.color = '#ef4444';
+                hint.innerText = '❌ لطفا ابتدا کلید API را وارد کنید.';
+                modelsWrapper.style.display = 'none';
+                return;
+            }
+
+            hint.style.color = '#f59e0b';
+            hint.innerText = '⏳ در حال اعتبارسنجی و دریافت لیست مدل‌ها...';
+            modelsWrapper.style.display = 'none';
+            modelsList.innerHTML = '';
+
+            try {
+                let availableModels = [];
+
+                // بررسی کلید OpenAI
+                if (apiKey.startsWith('sk-')) {
+                    const res = await fetch('https://api.openai.com/v1/models', {
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (res.ok && data.data) {
+                        availableModels = data.data
+                            .filter(m => m.id.includes('gpt'))
+                            .map(m => m.id);
+                        
+                        hint.style.color = '#10b981';
+                        hint.innerText = '✅ کلید OpenAI معتبر است!';
+                    } else {
+                        throw new Error(data.error?.message || 'کلید غیرمعتبر است.');
+                    }
+                } 
+                // بررسی کلید Gemini / Google
+                else if (apiKey.startsWith('AIzaSy')) {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                    const data = await res.json();
+
+                    if (res.ok && data.models) {
+                        availableModels = data.models
+                            .map(m => m.name.replace('models/', ''));
+                        
+                        hint.style.color = '#10b981';
+                        hint.innerText = '✅ کلید Google Gemini معتبر است!';
+                    } else {
+                        throw new Error(data.error?.message || 'کلید غیرمعتبر است.');
+                    }
+                } else {
+                    throw new Error('فرمت کلید شناخته شده نیست (باید با sk- یا AIzaSy شروع شود).');
+                }
+
+                // رندر کردن مدل‌ها در صفحه
+                if (availableModels.length > 0) {
+                    modelsList.innerHTML = availableModels
+                        .slice(0, 15) // نمایش ۱۵ مدل برتر
+                        .map(m => `<li style="background:var(--card-inner-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:5px;"><i class="fa-solid fa-robot" style="color:#a855f7;"></i> ${m}</li>`)
+                        .join('');
+                    modelsWrapper.style.display = 'block';
+
+                    // ذخیره در LocalStorage
+                    localStorage.setItem('user_custom_api_key', apiKey);
+                }
+
+            } catch (err) {
+                hint.style.color = '#ef4444';
+                hint.innerText = `❌ خطا در اعتبارسنجی: ${err.message}`;
+                modelsWrapper.style.display = 'none';
             }
         }
 

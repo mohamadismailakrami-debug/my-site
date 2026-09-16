@@ -930,22 +930,10 @@
 .ai-workspace-sidebar {
     background: var(--gpt-sidebar);
     border-left: 1px solid var(--gpt-border);
-
     padding: 10px;
-
     display: flex;
     flex-direction: column;
     gap: 4px;
-
-    min-width: 0;
-    min-height: 0;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    scrollbar-width: thin;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
 }
 
 .ai-workspace-brand {
@@ -1044,33 +1032,66 @@
 }
 
 .ai-workspace-main {
-    position: relative;
-
     min-width: 0;
     min-height: 0;
-    height: 100%;
-
     display: flex;
     flex-direction: column;
-
     background: var(--gpt-bg);
-    overflow: hidden;
 }
 
-.ai-workspace-chat {
-    flex: 1 1 auto;
-    min-width: 0;
+/* باگ اسکرول: sidebar و main هر دو آیتم گرید هستند و به‌صورت پیش‌فرض
+   min-height: auto دارند؛ بدون min-height: 0 محتوای بلند به‌جای اسکرول
+   داخلی، از کادر بیرون می‌زد و اسکرول‌بار اصلاً ظاهر نمی‌شد. */
+.ai-workspace-sidebar {
     min-height: 0;
-    height: 0;
     overflow-y: auto;
-    overflow-x: hidden;
-    padding: 24px 20px 12px;
+    transition: width 0.2s ease, padding 0.2s ease, opacity 0.15s ease;
+    width: 260px;
+    flex-shrink: 0;
+}
+
+.ai-workspace.sidebar-collapsed {
+    grid-template-columns: 0px minmax(0, 1fr);
+}
+
+.ai-workspace.sidebar-collapsed .ai-workspace-sidebar {
+    width: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-left: none;
+}
+
+.ai-sidebar-toggle {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--gpt-muted);
     display: flex;
-    flex-direction: column;
-    gap: 22px;
-    scrollbar-width: thin;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.ai-sidebar-toggle:hover {
+    color: var(--gpt-text);
+    background: var(--gpt-hover);
+}
+
+.ai-workspace-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 18px;
+    height: 56px;
+    flex-shrink: 0;
+    border-bottom: none;
 }
 
 .ai-workspace-close {
@@ -1162,29 +1183,17 @@
 }
 
 .ai-workspace-chat {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex: 1;
     min-height: 0;
-    height: 0;
-
     overflow-y: auto;
-    overflow-x: hidden;
-
-    /*
-     * فضای اضافه در پایین برای اینکه آخرین پیام
-     * پشت Composer شناور مخفی نشود.
-     */
-    padding: 24px 20px 150px;
-
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    padding: 24px 20px 12px;
     display: flex;
     flex-direction: column;
     gap: 22px;
-
     scrollbar-width: thin;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-
-    scroll-behavior: smooth;
 }
 
 .ai-welcome-card {
@@ -1405,50 +1414,20 @@
 /* ---------- Composer، شبیه به نوار پیام ChatGPT ---------- */
 
 .ai-workspace-composer {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-
-    padding: 18px 20px 20px;
+    padding: 6px 20px 22px;
     flex-shrink: 0;
-
-    background: linear-gradient(
-        to top,
-        var(--gpt-bg) 45%,
-        rgba(33, 33, 33, 0) 100%
-    );
-
-    pointer-events: none;
 }
 
 .ai-composer-box {
     position: relative;
-    width: min(768px, 100%);
+    width: min(720px, 100%);
     margin: 0 auto;
-
     border: 1px solid var(--gpt-border);
     background: var(--gpt-composer);
-    border-radius: 28px;
-
-    padding: 8px;
-    box-shadow:
-        0 8px 30px rgba(0, 0, 0, 0.18),
-        var(--gpt-shadow);
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-
-    pointer-events: auto;
-}
-
-.ai-composer-box:focus-within {
-    border-color: var(--gpt-muted);
-    box-shadow:
-        0 8px 30px rgba(0, 0, 0, 0.22),
-        var(--gpt-shadow);
+    border-radius: 26px;
+    padding: 8px 8px 8px 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), var(--gpt-shadow);
+    transition: 0.2s;
 }
 
 .ai-composer-box:focus-within {
@@ -1457,28 +1436,18 @@
 
 .ai-composer-input {
     width: 100%;
-
     min-height: 26px;
     max-height: 200px;
-
     resize: none;
-    overflow-y: auto;
-
     box-sizing: border-box;
-
     border: none;
     outline: none;
-
     background: transparent;
     color: var(--gpt-text);
-
     font-family: inherit;
     font-size: 0.86rem;
     line-height: 1.7;
-
     padding: 8px 14px 4px;
-
-    scrollbar-width: thin;
 }
 
 .ai-composer-input::placeholder {
@@ -1551,11 +1520,15 @@
 @media (max-width: 800px) {
     .ai-workspace {
         grid-template-columns: 1fr;
-        height: 620px;
+        height: min(620px, calc(100vh - 60px));
     }
 
     .ai-workspace-sidebar {
         display: none;
+    }
+
+    .ai-workspace.sidebar-collapsed {
+        grid-template-columns: 1fr;
     }
 
     .ai-model-selector-wrap {
@@ -1571,27 +1544,8 @@
     }
 
     .ai-workspace-composer {
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    padding: 12px 10px 14px;
-
-    background: linear-gradient(
-        to top,
-        var(--gpt-bg) 55%,
-        rgba(33, 33, 33, 0) 100%
-    );
-}
-
-.ai-composer-box {
-    width: 100%;
-    border-radius: 24px;
-}
-
-.ai-workspace-chat {
-    padding: 18px 12px 135px;
-}
+        padding: 8px 10px 16px;
+    }
 
     .ai-gpt-row {
         width: 100%;
@@ -1915,6 +1869,25 @@
                         <span style="color:#10b981; font-weight:bold;">آنلاین</span>
                     </div>
                 </div>
+
+                <div class="admin-panel-box" style="margin-top: 20px;">
+                    <div class="admin-panel-title"><i class="fa-solid fa-comments" style="color: #a855f7;"></i> حافظهٔ چت هوش مصنوعی</div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.7;">
+                        گفتگوی هر کاربر با هوش مصنوعی، برای حفظ سابقهٔ همان چت، در مرورگر او نگهداری می‌شود.
+                        مدت زمانی که این سابقه نگه‌داشته می‌شود (پیش از پاک‌سازی خودکار) از همین‌جا قابل تنظیم است.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; align-items: end;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>مدت نگهداری تاریخچهٔ چت (روز)</label>
+                            <input type="number" id="adminChatRetentionInput" min="1" step="1" placeholder="مثلاً 30">
+                        </div>
+                        <div>
+                            <button type="button" class="btn-register" onclick="saveAdminChatRetentionSetting()" style="width: 100%; height: 40px; justify-content: center;">
+                                ذخیره تنظیم
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1969,7 +1942,7 @@
             </div>
 
             <!-- AI CHAT WORKSPACE -->
-<div class="ai-workspace">
+<div class="ai-workspace" id="aiWorkspaceRoot">
 
     <!-- SIDEBAR -->
     <aside class="ai-workspace-sidebar">
@@ -1981,20 +1954,25 @@
             <strong>PERAMT AI</strong>
         </div>
 
-        <button type="button" class="ai-workspace-new-chat">
+        <button type="button" class="ai-workspace-new-chat" onclick="startNewAiChat()">
             <i class="fa-solid fa-plus"></i>
             چت جدید
         </button>
 
         <div class="ai-workspace-nav">
-            <div class="ai-workspace-nav-item active">
+            <div class="ai-workspace-nav-item active" onclick="selectAiNavItem(this, 'chat')">
                 <i class="fa-solid fa-comments"></i>
                 <span>گفتگو</span>
             </div>
 
-            <div class="ai-workspace-nav-item">
+            <div class="ai-workspace-nav-item" onclick="selectAiNavItem(this, 'image')">
                 <i class="fa-solid fa-image"></i>
                 <span>ساخت تصویر</span>
+            </div>
+
+            <div class="ai-workspace-nav-item" onclick="selectAiNavItem(this, 'video')">
+                <i class="fa-solid fa-clapperboard"></i>
+                <span>ساخت ویدیو</span>
             </div>
 
             <div class="ai-workspace-nav-item">
@@ -2022,6 +2000,10 @@
 
         <!-- HEADER -->
         <div class="ai-workspace-header">
+
+            <button type="button" class="ai-sidebar-toggle" onclick="toggleAiSidebar()" title="باز/بسته کردن پنل کناری">
+                <i class="fa-solid fa-bars"></i>
+            </button>
 
             <div class="ai-workspace-header-title">
                 <strong>گفتگوی جدید</strong>
@@ -3042,28 +3024,17 @@
             }
         }
 
+        /* --- NAVIGATION --- */
         function showPage(pageId) {
-    const pages = document.querySelectorAll('.page-section');
-    pages.forEach(p => p.classList.remove('active-page'));
-
-    // هنگام خروج از صفحه ابزارها، تمام تب‌های داخلی PDF مخفی شوند
-    document.querySelectorAll('.pdf-sub-tab-content').forEach(c => {
-        c.style.display = 'none';
-    });
-
-    // محیط ویرایش هوشمند PDF نیز همیشه هنگام ورود مجدد مخفی باشد
-    const smartPdfWorkspace = document.getElementById('smartPdfWorkspace');
-    if (smartPdfWorkspace) {
-        smartPdfWorkspace.style.display = 'none';
-    }
-
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.add('active-page');
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+            const pages = document.querySelectorAll('.page-section');
+            pages.forEach(p => p.classList.remove('active-page'));
+            
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active-page');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         /* --- MODAL CONTROL --- */
         function openModal(modalId) {
@@ -3945,34 +3916,13 @@
         }
 
         function switchPdfSubTab(subId, btn) {
-    // فقط وقتی صفحه خدمات PDF فعال است اجازه نمایش تب را بده
-    const pdfPage = document.getElementById('fileConverterPage');
+            document.querySelectorAll('.pdf-sub-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.pdf-sub-tab-content').forEach(c => c.style.display = 'none');
 
-    if (!pdfPage || !pdfPage.classList.contains('active-page')) {
-        return;
-    }
-
-    // مخفی کردن تمام تب‌های PDF
-    document.querySelectorAll('.pdf-sub-tab-content').forEach(c => {
-        c.style.display = 'none';
-    });
-
-    // حذف حالت فعال از دکمه‌ها
-    document.querySelectorAll('.pdf-sub-tab-btn').forEach(b => {
-        b.classList.remove('active');
-    });
-
-    // نمایش تب انتخاب‌شده
-    const target = document.getElementById(subId);
-
-    if (target) {
-        target.style.display = 'block';
-    }
-
-    if (btn) {
-        btn.classList.add('active');
-    }
-}
+            if (btn) btn.classList.add('active');
+            const target = document.getElementById(subId);
+            if (target) target.style.display = 'block';
+        }
 
         function switchLinkQrSubTab(subId, btn) {
             document.querySelectorAll('.linkqr-sub-tab-btn').forEach(b => b.classList.remove('active'));
@@ -4931,6 +4881,16 @@ if (availableModel) {
                 if (modelSelect) modelSelect.value = savedModel;
             }
             selectAiModel(document.getElementById('aiModelSelect').value);
+
+            // بازیابی گفتگوی قبلی کاربر (در صورت وجود و معتبر بودن طبق مدت نگهداری تنظیم‌شده در پنل مدیریت)
+            restoreAiChatFromStorage();
+
+            // بازگرداندن وضعیت باز/بسته بودن پنل کناری در بازدید بعدی
+            try {
+                if (localStorage.getItem('ai_sidebar_collapsed') === '1') {
+                    document.getElementById('aiWorkspaceRoot')?.classList.add('sidebar-collapsed');
+                }
+            } catch (e) {}
         });
 
         // تشخیص سرویس بر اساس الگوی کلید API وارد شده و تنظیم خودکار select
@@ -5094,6 +5054,177 @@ if (availableModel) {
 
         // تمام مدل‌های مدیر و «جستجوی وب» از پروکسی هم‌دامنه عبور می‌کنند؛ بنابراین API Key در مرورگر قرار نمی‌گیرد.
 
+        // ---------------- SIDEBAR TOGGLE + NAV ITEMS ---------------- //
+        function toggleAiSidebar() {
+            const root = document.getElementById('aiWorkspaceRoot');
+            if (!root) return;
+            root.classList.toggle('sidebar-collapsed');
+            try { localStorage.setItem('ai_sidebar_collapsed', root.classList.contains('sidebar-collapsed') ? '1' : '0'); } catch (e) {}
+        }
+
+        function selectAiNavItem(el, kind) {
+            document.querySelectorAll('.ai-workspace-nav .ai-workspace-nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            if (kind === 'image') {
+                alert('بخش «ساخت تصویر» به‌زودی با مدل‌های تصویرسازی فعال می‌شود.');
+            } else if (kind === 'video') {
+                alert('کادر «ساخت ویدیو» آماده است؛ مدل‌های ساخت ویدیو بعداً به همین بخش اضافه می‌شوند.');
+            }
+        }
+
+        // ---------------- AI CHAT MEMORY (حافظهٔ گفتگو + نگهداری تا مدت مشخص) ---------------- //
+        let aiConversationHistory = []; // [{ role: 'user' | 'assistant', content: '...' }]
+        const AI_CHAT_STORAGE_KEY = 'peramt_ai_chat_history';
+        const AI_CHAT_MAX_TURNS_IN_PROMPT = 12; // حداکثر تعداد پیام قبلی که برای حفظ سابقهٔ گفتگو به مدل ارسال می‌شود
+        const AI_CHAT_DEFAULT_RETENTION_DAYS = 30; // مقدار پیش‌فرض؛ از پنل مدیریت قابل تغییر است
+
+        // خواندن/ذخیرهٔ تنظیم «مدت نگهداری تاریخچهٔ چت» در پنل مدیریت
+        function saveAdminChatRetentionSetting() {
+            const input = document.getElementById('adminChatRetentionInput');
+            const days = parseInt(input?.value, 10);
+            if (!Number.isFinite(days) || days < 1) {
+                alert('لطفاً یک عدد معتبر (حداقل ۱ روز) وارد کنید.');
+                return;
+            }
+            localStorage.setItem('admin_chat_retention_days', String(days));
+            purgeExpiredAiChats();
+            alert('مدت نگهداری تاریخچهٔ چت با موفقیت ذخیره شد.');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('adminChatRetentionInput');
+            if (input) input.value = getAiChatRetentionDays();
+        });
+
+        function getAiChatRetentionDays() {
+            const v = parseInt(localStorage.getItem('admin_chat_retention_days'), 10);
+            return (Number.isFinite(v) && v > 0) ? v : AI_CHAT_DEFAULT_RETENTION_DAYS;
+        }
+
+        function getAllStoredAiChats() {
+            try { return JSON.parse(localStorage.getItem(AI_CHAT_STORAGE_KEY)) || {}; }
+            catch (e) { return {}; }
+        }
+
+        function saveAiChatToStorage() {
+            try {
+                const all = getAllStoredAiChats();
+                all[getCurrentUserId()] = { messages: aiConversationHistory, updatedAt: Date.now() };
+                localStorage.setItem(AI_CHAT_STORAGE_KEY, JSON.stringify(all));
+            } catch (e) {}
+        }
+
+        function clearAiChatFromStorage() {
+            try {
+                const all = getAllStoredAiChats();
+                delete all[getCurrentUserId()];
+                localStorage.setItem(AI_CHAT_STORAGE_KEY, JSON.stringify(all));
+            } catch (e) {}
+        }
+
+        // حذف گفتگوهایی که طبق «مدت نگهداری» تنظیم‌شده در پنل مدیریت منقضی شده‌اند
+        function purgeExpiredAiChats() {
+            try {
+                const all = getAllStoredAiChats();
+                const retentionMs = getAiChatRetentionDays() * 24 * 60 * 60 * 1000;
+                let changed = false;
+                Object.keys(all).forEach(uid => {
+                    const entry = all[uid];
+                    if (!entry || !entry.updatedAt || (Date.now() - entry.updatedAt) > retentionMs) {
+                        delete all[uid];
+                        changed = true;
+                    }
+                });
+                if (changed) localStorage.setItem(AI_CHAT_STORAGE_KEY, JSON.stringify(all));
+            } catch (e) {}
+        }
+
+        function appendUserMessageToChat(text) {
+            const chatBox = document.getElementById('aiChatBox');
+            if (!chatBox) return;
+            const userRow = document.createElement('div');
+            userRow.className = 'ai-gpt-row user';
+            const userBubble = document.createElement('div');
+            userBubble.className = 'ai-gpt-bubble-user';
+            userBubble.textContent = text;
+            userRow.appendChild(userBubble);
+            chatBox.appendChild(userRow);
+        }
+
+        function appendAssistantMessageToChat(text, sources) {
+            const chatBox = document.getElementById('aiChatBox');
+            if (!chatBox) return;
+            const aiRow = document.createElement('div');
+            aiRow.className = 'ai-gpt-row assistant';
+
+            let sourcesHtml = '';
+            if (Array.isArray(sources) && sources.length) {
+                sourcesHtml = `<div class="ai-gpt-sources"><b>منابع:</b><br>` +
+                    sources.map((s, i) => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${i + 1}. ${escapeHtml(s.title || s.url)}</a>`).join('<br>') +
+                    `</div>`;
+            }
+
+            aiRow.innerHTML = `
+                <div class="ai-gpt-avatar"><i class="fa-solid fa-sparkles"></i></div>
+                <div>
+                    <div class="ai-gpt-content">${escapeHtml(text)}</div>
+                    ${sourcesHtml}
+                    <div class="ai-gpt-actions">
+                        <button type="button" class="ai-gpt-action-btn" title="کپی" onclick="copyAiMessage(this)"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                </div>`;
+            chatBox.appendChild(aiRow);
+            aiRow.querySelector('.ai-gpt-content').dataset.rawText = text;
+        }
+
+        // بازیابی گفتگوی ذخیره‌شدهٔ کاربر هنگام بازکردن صفحه (در صورتی که هنوز طبق تنظیم مدیر منقضی نشده باشد)
+        function restoreAiChatFromStorage() {
+            purgeExpiredAiChats();
+            const all = getAllStoredAiChats();
+            const entry = all[getCurrentUserId()];
+            if (!entry || !Array.isArray(entry.messages) || !entry.messages.length) return;
+
+            removeAiWelcomeCard();
+            entry.messages.forEach(m => {
+                if (m.role === 'user') appendUserMessageToChat(m.content);
+                else appendAssistantMessageToChat(m.content);
+            });
+            aiConversationHistory = entry.messages.slice();
+            const chatBox = document.getElementById('aiChatBox');
+            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // شروع یک چت تازه: سابقهٔ فعلی و ذخیره‌سازی آن پاک شده و کارت خوش‌آمد برمی‌گردد
+        function startNewAiChat() {
+            aiConversationHistory = [];
+            clearAiChatFromStorage();
+            const chatBox = document.getElementById('aiChatBox');
+            if (!chatBox) return;
+            chatBox.innerHTML = `
+                <div class="ai-welcome-card">
+                    <div class="ai-welcome-icon"><i class="fa-solid fa-sparkles"></i></div>
+                    <h3>چطور می‌توانم کمک کنم؟</h3>
+                    <p>من دستیار هوش مصنوعی PERAMT هستم. سوالت را بنویس یا یکی از پیشنهادها را انتخاب کن.</p>
+                    <span id="aiSelectedModelLabel" class="ai-selected-model"></span>
+                    <div class="ai-welcome-suggestions">
+                        <button type="button" class="ai-suggestion-chip" onclick="useAiSuggestion(this)">یک ایمیل رسمی برای من بنویس</button>
+                        <button type="button" class="ai-suggestion-chip" onclick="useAiSuggestion(this)">یک ایده محتوا برای اینستاگرام بده</button>
+                        <button type="button" class="ai-suggestion-chip" onclick="useAiSuggestion(this)">این متن را خلاصه کن</button>
+                        <button type="button" class="ai-suggestion-chip" onclick="useAiSuggestion(this)">یک برنامه هفتگی بنویس</button>
+                    </div>
+                </div>`;
+            const modelSelect = document.getElementById('aiModelSelect');
+            if (modelSelect) selectAiModel(modelSelect.value);
+        }
+
+        // ساخت متنی شامل سابقهٔ گفتگو، تا پاسخ‌ها با توجه به پیام‌های قبلیِ همین چت داده شوند
+        function buildPromptWithHistory(userMsg) {
+            const recent = aiConversationHistory.slice(-AI_CHAT_MAX_TURNS_IN_PROMPT);
+            if (!recent.length) return userMsg;
+            const transcript = recent.map(m => (m.role === 'user' ? 'کاربر: ' : 'دستیار: ') + m.content).join('\n');
+            return `[سابقهٔ گفتگوی قبلی همین چت — فقط برای حفظ context است، مستقیم به آن پاسخ نده]\n${transcript}\n[پایان سابقه]\n\nپیام جدید کاربر:\n${userMsg}`;
+        }
+
         function removeAiWelcomeCard() {
             const chatBox = document.getElementById('aiChatBox');
             const welcome = chatBox?.querySelector('.ai-welcome-card');
@@ -5132,13 +5263,7 @@ if (availableModel) {
 
             removeAiWelcomeCard();
 
-            const userRow = document.createElement('div');
-            userRow.className = 'ai-gpt-row user';
-            const userBubble = document.createElement('div');
-            userBubble.className = 'ai-gpt-bubble-user';
-            userBubble.textContent = userMsg;
-            userRow.appendChild(userBubble);
-            chatBox.appendChild(userRow);
+            appendUserMessageToChat(userMsg);
 
             inputEl.value = '';
             inputEl.style.height = 'auto';
@@ -5160,13 +5285,16 @@ if (availableModel) {
         ? 'https://mohamad.mohamad-5da.workers.dev/api/ai-proxy'
         : '/api/ai-proxy';
 
+// پیام همراه با سابقهٔ گفتگو ارسال می‌شود تا پاسخ با توجه به پیام‌های قبلی همین چت داده شود؛
+// آرایهٔ history هم برای سازگاری با نسخه‌های بعدی پروکسی سمت سرور ارسال می‌شود.
 const res = await fetch(AI_PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
         provider,
         model: selectedModel,
-        message: userMsg
+        message: buildPromptWithHistory(userMsg),
+        history: aiConversationHistory.slice(-AI_CHAT_MAX_TURNS_IN_PROMPT)
     })
 });
 
@@ -5186,27 +5314,12 @@ const res = await fetch(AI_PROXY_URL, {
                 }
 
                 const answerText = data.text || 'پاسخی دریافت نشد.';
-                const aiRow = document.createElement('div');
-                aiRow.className = 'ai-gpt-row assistant';
+                appendAssistantMessageToChat(answerText, data.sources);
 
-                let sourcesHtml = '';
-                if (Array.isArray(data.sources) && data.sources.length) {
-                    sourcesHtml = `<div class="ai-gpt-sources"><b>منابع:</b><br>` +
-                        data.sources.map((s, i) => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${i+1}. ${escapeHtml(s.title || s.url)}</a>`).join('<br>') +
-                        `</div>`;
-                }
-
-                aiRow.innerHTML = `
-                    <div class="ai-gpt-avatar"><i class="fa-solid fa-sparkles"></i></div>
-                    <div>
-                        <div class="ai-gpt-content">${escapeHtml(answerText)}</div>
-                        ${sourcesHtml}
-                        <div class="ai-gpt-actions">
-                            <button type="button" class="ai-gpt-action-btn" title="کپی" onclick="copyAiMessage(this)"><i class="fa-solid fa-copy"></i></button>
-                        </div>
-                    </div>`;
-                chatBox.appendChild(aiRow);
-                aiRow.querySelector('.ai-gpt-content').dataset.rawText = answerText;
+                // ذخیرهٔ سابقهٔ گفتگو، هم برای حافظهٔ درون‌چتی و هم نگهداری تا مدت تعیین‌شده در پنل مدیریت
+                aiConversationHistory.push({ role: 'user', content: userMsg });
+                aiConversationHistory.push({ role: 'assistant', content: answerText });
+                saveAiChatToStorage();
             } catch (err) {
                 loadingRow.remove();
                 const errRow = document.createElement('div');

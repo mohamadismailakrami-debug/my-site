@@ -1998,12 +1998,23 @@
 
                 <div class="admin-panel-box">
                     <div class="admin-panel-title"><i class="fa-solid fa-shield-halved" style="color: #ef4444;"></i> تنظیمات عمومی و امنیت</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:var(--text-muted);">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; color:var(--text-muted);">
                         <span>سیستم احراز هویت و ذخیره‌سازی Supabase فعال است</span>
                         <span style="color:#10b981; font-weight:bold;">آنلاین</span>
                     </div>
                 </div>
 
+                <div class="admin-panel-box">
+                    <div class="admin-panel-title"><i class="fa-solid fa-key" style="color: #a855f7;"></i> کلید API شخصی</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; font-size:0.82rem; color:var(--text-muted);">
+                        <span>کلید اختصاصی خود را وارد، اعتبارسنجی کنید و ببینید به چه مدل‌هایی دسترسی دارید.</span>
+                        <button type="button" onclick="openApiKeySettings()"
+                                style="cursor:pointer; background: var(--primary-accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:inherit; font-size:0.78rem; font-weight:bold;">
+                            باز کردن تنظیمات کلید API
+                        </button>
+                    </div>
+                </div>
+            </div>
                 <div class="admin-panel-box" style="margin-top: 20px;">
                     <div class="admin-panel-title"><i class="fa-solid fa-comments" style="color: #a855f7;"></i> حافظهٔ چت هوش مصنوعی</div>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.7;">
@@ -2015,13 +2026,54 @@
                             <label>مدت نگهداری تاریخچهٔ چت (روز)</label>
                             <input type="number" id="adminChatRetentionInput" min="1" step="1" placeholder="مثلاً 30">
                         </div>
-                        <div>
-                            <button type="button" class="btn-register" onclick="saveAdminChatRetentionSetting()" style="width: 100%; height: 40px; justify-content: center;">
-                                ذخیره تنظیم
-                            </button>
+                                            <div class="form-group" style="margin-bottom:0;">
+                        <label>سرویس‌دهنده (Provider)</label>
+                        <select id="aiKeyProviderSelect" onchange="onProviderOverrideChange()"
+                                style="width:100%; background: var(--input-bg); border:1px solid var(--border-color); border-radius:8px; padding:9px 12px; color: var(--text-main); font-size:0.8rem; outline:none;">
+                            <option value="auto">تشخیص خودکار از روی کلید</option>
+                            <option value="openai">OpenAI (GPT)</option>
+                            <option value="anthropic">Anthropic (Claude)</option>
+                            <option value="gemini">Google Gemini</option>
+                            <option value="groq">Groq</option>
+                            <option value="deepseek">DeepSeek</option>
+                        </select>
+                        <div style="font-size:0.7rem; color: var(--text-muted); margin-top:6px; line-height:1.6;">
+                            کلیدهای <strong>OpenAI</strong> و <strong>DeepSeek</strong> هر دو با «sk-» شروع می‌شوند و تشخیص خودکار نمی‌تواند بین آن‌ها فرق بگذارد؛ اگر کلید DeepSeek دارید، حتماً اینجا دستی انتخاب کنید.
                         </div>
                     </div>
+
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <button type="button" class="btn-register" onclick="saveAiSettings()" style="width: 100%; height: 40px; justify-content: center;">
+                            ذخیره کلید
+                        </button>
+                        <button type="button" id="btnValidateApiKey" onclick="validateApiKeyAndListModels()"
+                                style="width:100%; height:40px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background: transparent; border:1px solid var(--primary-accent); color: var(--primary-accent); border-radius:8px; font-family:inherit; font-size:0.8rem; font-weight:bold;">
+                            <i class="fa-solid fa-circle-check"></i> اعتبارسنجی و نمایش مدل‌های در دسترس
+                        </button>
+                    </div>
                 </div>
+
+                <!-- نتیجهٔ اعتبارسنجی -->
+                <div id="aiKeyValidateStatus" style="margin-top:14px; font-size:0.78rem; line-height:1.7; min-height:1em;"></div>
+
+                <!-- لیست مدل‌های قابل دسترس با این کلید -->
+                <div id="aiKeyModelsBox" style="display:none; margin-top:12px; border:1px solid var(--border-color); border-radius:10px; background: var(--input-bg); overflow:hidden;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-bottom:1px solid var(--border-color);">
+                        <span style="font-size:0.8rem; font-weight:bold; color: var(--text-main);">
+                            <i class="fa-solid fa-list-check" style="color:#10b981;"></i> مدل‌های در دسترس این کلید
+                        </span>
+                        <span id="aiKeyModelsCount" style="font-size:0.72rem; color: var(--text-muted);"></span>
+                    </div>
+                    <div style="padding:10px 12px; border-bottom:1px solid var(--border-color);">
+                        <input type="text" id="aiKeyModelsFilter" oninput="renderDiscoveredModels()" placeholder="جست‌وجو بین مدل‌های دریافت‌شده..."
+                               style="width:100%; background: var(--card-inner-bg); border:1px solid var(--border-color); border-radius:8px; padding:8px 10px; color: var(--text-main); font-size:0.76rem; outline:none;">
+                    </div>
+                    <div id="aiKeyModelsList" style="max-height:280px; overflow-y:auto;"></div>
+                    <div style="padding:8px 12px; font-size:0.68rem; color: var(--text-muted); border-top:1px solid var(--border-color);">
+                        با کلیک روی هر مدل، همان مدل برای چت انتخاب می‌شود.
+                    </div>
+                </div>
+            </div>
             </div>
         </section>
 
@@ -5017,6 +5069,9 @@ if (modelSelectEl) {
                 const keyInput = document.getElementById('aiApiKeyInput');
                 if (keyInput) keyInput.value = savedKey;
             }
+            // بازیابی انتخاب دستی سرویس‌دهنده
+            const providerSelect = document.getElementById('aiKeyProviderSelect');
+            if (providerSelect) providerSelect.value = window.__aiProviderOverride || 'auto';
             // تشخیص خودکار مدل بر اساس کلید ذخیره‌شده اولویت دارد؛
             // اگر تشخیص ممکن نبود، مدل ذخیره‌شده قبلی (در صورت وجود) اعمال می‌شود
             const detected = autoDetectAiModel();
@@ -5039,8 +5094,13 @@ if (modelSelectEl) {
 
         // تشخیص سرویس بر اساس الگوی کلید API وارد شده و تنظیم خودکار select
         // بازگشت: نام سرویس تشخیص داده شده یا null در صورت عدم تشخیص
+        // اگر کاربر از منوی تنظیمات، سرویس‌دهنده را دستی انتخاب کرده باشد، همان اولویت دارد
+        window.__aiProviderOverride = localStorage.getItem('user_ai_provider_override') || 'auto';
+
         function detectProviderFromKey(key) {
             if (!key) return null;
+            const override = window.__aiProviderOverride;
+            if (override && override !== 'auto') return override;
             if (key.startsWith('sk-ant-')) return 'anthropic';
             if (key.startsWith('gsk_')) return 'groq';
             if (key.startsWith('AIzaSy') || key.startsWith('AQ.')) return 'gemini';
@@ -5092,6 +5152,210 @@ if (modelSelectEl) {
             localStorage.setItem('user_ai_model', model);
             alert('تنظیمات مدل و API Key با موفقیت ذخیره شد.');
         }
+
+        // ================= اعتبارسنجی کلید شخصی و کشف مدل‌های در دسترس =================
+        const PROVIDER_LABELS = {
+            openai: 'OpenAI',
+            anthropic: 'Anthropic (Claude)',
+            gemini: 'Google Gemini',
+            groq: 'Groq',
+            deepseek: 'DeepSeek'
+        };
+
+        let discoveredModels = [];      // خروجی آخرین اعتبارسنجی
+        let discoveredProvider = null;
+
+        function onProviderOverrideChange() {
+            const sel = document.getElementById('aiKeyProviderSelect');
+            window.__aiProviderOverride = sel ? sel.value : 'auto';
+            localStorage.setItem('user_ai_provider_override', window.__aiProviderOverride);
+            autoDetectAiModel();
+            renderModelCatalog();
+        }
+
+        function setKeyStatus(html, color) {
+            const el = document.getElementById('aiKeyValidateStatus');
+            if (!el) return;
+            el.innerHTML = html;
+            el.style.color = color || 'var(--text-muted)';
+        }
+
+        // پیام خطای قابل‌فهم بر اساس کد وضعیت HTTP
+        function describeKeyError(status, serverMsg) {
+            if (status === 401 || status === 403) return 'کلید نامعتبر است یا دسترسی ندارد (کد ' + status + ').';
+            if (status === 404) return 'آدرس سرویس پیدا نشد (۴۰۴) — احتمالاً سرویس‌دهنده را اشتباه انتخاب کرده‌اید.';
+            if (status === 429) return 'کلید معتبر است اما سهمیه/محدودیت نرخ درخواست پر شده است (۴۲۹).';
+            return (serverMsg || ('خطای سرویس با کد ' + status));
+        }
+
+        async function validateApiKeyAndListModels() {
+            const keyInput = document.getElementById('aiApiKeyInput');
+            const box = document.getElementById('aiKeyModelsBox');
+            const btn = document.getElementById('btnValidateApiKey');
+            const key = keyInput ? keyInput.value.trim() : '';
+
+            if (!key) {
+                setKeyStatus('ابتدا کلید API خود را وارد کنید.', '#ef4444');
+                return;
+            }
+
+            const provider = detectProviderFromKey(key);
+            if (!provider) {
+                setKeyStatus('نوع کلید تشخیص داده نشد. لطفاً سرویس‌دهنده را از منوی کناری به‌صورت دستی انتخاب کنید.', '#f59e0b');
+                return;
+            }
+
+            if (box) box.style.display = 'none';
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+            setKeyStatus('<i class="fa-solid fa-spinner fa-spin"></i> در حال بررسی کلید با سرویس <b>' + (PROVIDER_LABELS[provider] || provider) + '</b>...', 'var(--text-muted)');
+
+            try {
+                const models = await fetchModelsForProvider(provider, key);
+                discoveredModels = models;
+                discoveredProvider = provider;
+
+                const added = mergeDiscoveredModels(provider, models);
+                setKeyStatus(
+                    '✅ کلید <b>معتبر</b> است. سرویس: <b>' + (PROVIDER_LABELS[provider] || provider) + '</b> — تعداد مدل‌های قابل دسترس: <b>' + models.length + '</b>' +
+                    (added ? '<br><span style="font-size:0.72rem;">' + added + ' مدل جدید به لیست انتخاب مدلِ چت اضافه شد.</span>' : ''),
+                    '#10b981'
+                );
+
+                if (box) box.style.display = 'block';
+                renderDiscoveredModels();
+            } catch (err) {
+                discoveredModels = [];
+                setKeyStatus('❌ ' + err.message, '#ef4444');
+                if (box) box.style.display = 'none';
+            } finally {
+                if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+            }
+        }
+
+        async function fetchModelsForProvider(provider, key) {
+            // --- Google Gemini ---
+            if (provider === 'gemini') {
+                const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + encodeURIComponent(key));
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.error) throw new Error(describeKeyError(res.status, data.error && data.error.message));
+                return (data.models || [])
+                    .filter(m => !m.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent'))
+                    .map(m => ({
+                        id: String(m.name || '').replace('models/', ''),
+                        label: m.displayName || String(m.name || '').replace('models/', ''),
+                        note: m.inputTokenLimit ? ('ورودی تا ' + m.inputTokenLimit.toLocaleString('en-US') + ' توکن') : ''
+                    }));
+            }
+
+            // --- Anthropic ---
+            if (provider === 'anthropic') {
+                const res = await fetch('https://api.anthropic.com/v1/models?limit=100', {
+                    headers: {
+                        'x-api-key': key,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    }
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.error) throw new Error(describeKeyError(res.status, data.error && data.error.message));
+                return (data.data || []).map(m => ({
+                    id: m.id,
+                    label: m.display_name || m.id,
+                    note: m.created_at ? ('انتشار: ' + String(m.created_at).slice(0, 10)) : ''
+                }));
+            }
+
+            // --- سرویس‌های سازگار با OpenAI ---
+            const endpoints = {
+                openai:   'https://api.openai.com/v1/models',
+                groq:     'https://api.groq.com/openai/v1/models',
+                deepseek: 'https://api.deepseek.com/models'
+            };
+            if (!endpoints[provider]) throw new Error('این سرویس‌دهنده پشتیبانی نمی‌شود.');
+
+            try {
+                const res = await fetch(endpoints[provider], { headers: { 'Authorization': 'Bearer ' + key } });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.error) throw new Error(describeKeyError(res.status, data.error && data.error.message));
+                return (data.data || []).map(m => ({
+                    id: m.id,
+                    label: m.id,
+                    note: m.owned_by ? ('مالک: ' + m.owned_by) : ''
+                }));
+            } catch (err) {
+                // OpenAI و DeepSeek اجازهٔ فراخوانی مستقیم از مرورگر (CORS) نمی‌دهند
+                if (err.message === 'Failed to fetch') {
+                    return await fetchModelsViaProxy(provider, key);
+                }
+                throw err;
+            }
+        }
+
+        // تلاش دوم: عبور درخواست از پروکسی سمت سرور خودتان (/api/ai-proxy)
+        async function fetchModelsViaProxy(provider, key) {
+            const res = await fetch('/api/ai-proxy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list-models', provider: provider, apiKey: key })
+            }).catch(() => null);
+
+            if (!res) {
+                throw new Error('مرورگر اجازهٔ فراخوانی مستقیم این سرویس را نمی‌دهد (محدودیت CORS) و پروکسی سرور هم در دسترس نیست.');
+            }
+            const data = await readJsonSafely(res);
+            if (!res.ok || data.error || !Array.isArray(data.models)) {
+                throw new Error('اعتبارسنجی مستقیم به‌دلیل محدودیت CORS ممکن نیست و پروکسی سرور هنوز قابلیت «list-models» را ندارد.');
+            }
+            return data.models.map(m => ({ id: m.id || m, label: m.id || m, note: m.owned_by || '' }));
+        }
+
+        // افزودن مدل‌های کشف‌شده به کاتالوگ اصلی چت
+        function mergeDiscoveredModels(provider, models) {
+            let added = 0;
+            models.forEach(m => {
+                if (!m.id) return;
+                if (!MODEL_CATALOG.some(x => x.id === m.id)) {
+                    MODEL_CATALOG.push({
+                        id: m.id,
+                        label: (PROVIDER_LABELS[provider] || provider) + ' · ' + (m.label || m.id),
+                        provider: provider,
+                        discovered: true
+                    });
+                    added++;
+                }
+            });
+            if (added) renderModelCatalog();
+            return added;
+        }
+
+        function renderDiscoveredModels() {
+            const list = document.getElementById('aiKeyModelsList');
+            const countEl = document.getElementById('aiKeyModelsCount');
+            const filterEl = document.getElementById('aiKeyModelsFilter');
+            if (!list) return;
+
+            const term = filterEl ? filterEl.value.trim().toLowerCase() : '';
+            const rows = discoveredModels.filter(m =>
+                !term || (m.id && m.id.toLowerCase().includes(term)) || (m.label && m.label.toLowerCase().includes(term))
+            );
+
+            if (countEl) countEl.textContent = rows.length + ' مدل';
+
+            if (rows.length === 0) {
+                list.innerHTML = '<div style="padding:12px; font-size:0.76rem; color: var(--text-muted);">موردی یافت نشد.</div>';
+                return;
+            }
+
+            list.innerHTML = rows.map(m => {
+                const safeId = String(m.id).replace(/'/g, "\\'");
+                return '<div onclick="selectAiModel(\'' + safeId + '\')" style="padding:9px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; border-bottom:1px solid var(--border-color); font-size:0.76rem;">' +
+                        '<span style="color: var(--text-main); word-break:break-all;">' + (m.label || m.id) + '</span>' +
+                        '<span style="color: var(--text-muted); font-size:0.66rem; white-space:nowrap;">' + (m.note || '') + '</span>' +
+                       '</div>';
+            }).join('');
+        }
+
+        // ---- کاتالوگ کامل مدل‌ها ----
 
         // فهرست سرویس‌های اصلی هوش مصنوعی و زیرمجموعهٔ مدل‌های هرکدام.
         // نکته: نام دقیق برخی مدل‌های غیر-Anthropic (Gemini / GPT / DeepSeek / Groq) در آیندهٔ نزدیک
@@ -5595,6 +5859,18 @@ const res = await fetch(AI_PROXY_URL, {
             if (panel) {
                 panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
             }
+        }
+
+        // باز کردن مستقیم پنل کلید API از تب تنظیمات پنل ادمین
+        function openApiKeySettings() {
+            showPage('aiPlaygroundPage');
+            const panel = document.getElementById('aiApiKeyPanel');
+            if (panel) {
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            const keyInput = document.getElementById('aiApiKeyInput');
+            if (keyInput) setTimeout(() => keyInput.focus(), 300);
         }
 
         // اعتبارسنجی کلید API و دریافتی مدل‌های مجاز

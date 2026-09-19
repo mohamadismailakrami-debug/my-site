@@ -235,7 +235,7 @@
         .search-container {
             max-width: 580px; margin: 0 auto 15px auto; background-color: var(--search-bg);
             border-radius: 12px; padding: 4px 8px; display: flex; align-items: center;
-            border: 1px solid transparent;
+            border: 1px solid transparent; position: relative;
             background: linear-gradient(var(--search-bg), var(--search-bg)) padding-box,
                         linear-gradient(120deg, #ff007f 0%, #7f00ff 25%, #00d4ff 50%, #00ff87 75%, #ff007f 100%) border-box;
             background-size: 200% 200%; animation: neon-border-flow 8s ease infinite;
@@ -243,6 +243,20 @@
         }
         .search-container input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-main); padding: 8px 12px; font-size: 0.8rem; }
         .search-btn { background: var(--primary-btn); border: none; color: white; padding: 8px 18px; border-radius: 7px; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px; order: -1; }
+
+        .home-search-results {
+            display: none; position: absolute; top: calc(100% + 6px); right: 0; left: 0;
+            background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 200; overflow: hidden; max-height: 280px; overflow-y: auto;
+        }
+        .home-search-results.show { display: block; }
+        .home-search-result-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 0.8rem;
+            color: var(--text-main); cursor: pointer;
+        }
+        .home-search-result-item:hover { background-color: var(--card-inner-bg); }
+        .home-search-result-item i { color: var(--primary-accent); width: 18px; text-align: center; }
+        .home-search-no-result { padding: 14px; text-align: center; font-size: 0.75rem; color: var(--text-muted); }
 
         @keyframes neon-border-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
@@ -1791,6 +1805,7 @@
             <div class="search-container">
                 <button class="search-btn" type="button"><i class="fa-solid fa-magnifying-glass"></i> جستجو</button>
                 <input type="text" id="homeSearchInput" onkeyup="handleHomeSearch(this.value)" placeholder="جستجوی ابزار مورد نظر...">
+                <div class="home-search-results" id="homeSearchResults"></div>
             </div>
 
             <div class="tags-container">
@@ -5232,18 +5247,56 @@
         }
 
         // Search & Tags
+        const SITE_SEARCH_ITEMS = [
+            { title: 'هوش مصنوعی و چت با AI', keywords: ['هوش مصنوعی', 'چت', 'مدل', 'ai', 'gpt', 'چت با هوش مصنوعی'], icon: 'fa-solid fa-brain', action: () => showPage('aiPlaygroundPage') },
+            { title: 'کتابخانه پرامپت‌ها', keywords: ['پرامپت', 'prompt', 'پرامپت هوش مصنوعی'], icon: 'fa-solid fa-lightbulb', action: () => showPage('promptsPage') },
+            { title: 'خدمات جامع پی‌دی‌اف', keywords: ['پی دی اف', 'pdf', 'تبدیل pdf'], icon: 'fa-solid fa-file-pdf', action: () => { showPage('fileConverterPage'); switchConverterPageTab('pagePdfServices', document.querySelectorAll('.converter-page-tab-btn')[0]); } },
+            { title: 'خدمات جامع ورد', keywords: ['ورد', 'word', 'تبدیل ورد'], icon: 'fa-regular fa-file-word', action: () => { showPage('fileConverterPage'); switchConverterPageTab('pageWordServices', document.querySelectorAll('.converter-page-tab-btn')[1]); } },
+            { title: 'خدمات جامع پاورپوینت', keywords: ['پاورپوینت', 'پاور پوینت', 'ppt'], icon: 'fa-regular fa-file-powerpoint', action: () => { showPage('fileConverterPage'); switchConverterPageTab('pagePptServices', document.querySelectorAll('.converter-page-tab-btn')[2]); } },
+            { title: 'ویرایش تصویر آسان', keywords: ['تصویر', 'عکس', 'image'], icon: 'fa-solid fa-image', action: () => { showPage('fileConverterPage'); switchConverterPageTab('pageImageEditServices', document.querySelectorAll('.converter-page-tab-btn')[3]); } },
+            { title: 'تبدیل فایل به لینک و کیوآرکد', keywords: ['کیوآر', 'qr', 'لینک', 'دانلود', 'ساخت qr کد'], icon: 'fa-solid fa-qrcode', action: () => showPage('linkQrDownloadPage') }
+        ];
+
         function handleHomeSearch(val) {
-            val = val.trim().toLowerCase();
-            if (!val) return;
-            if (val.includes('پرامپت')) {
-                showPage('promptsPage');
-            } else if (val.includes('پی دی اف') || val.includes('pdf') || val.includes('ورد') || val.includes('آفیس')) {
-                showPage('fileConverterPage');
-            } else if (val.includes('کیوآر') || val.includes('qr') || val.includes('لینک')) {
-                showPage('linkQrDownloadPage');
-            } else if (val.includes('هوش مصنوعی') || val.includes('چت') || val.includes('مدل')) {
-                showPage('aiPlaygroundPage');
+            const resultsBox = document.getElementById('homeSearchResults');
+            if (!resultsBox) return;
+
+            const query = val.trim().toLowerCase();
+            if (!query) {
+                resultsBox.classList.remove('show');
+                resultsBox.innerHTML = '';
+                return;
             }
+
+            const matches = SITE_SEARCH_ITEMS.filter(item =>
+                item.title.toLowerCase().includes(query) ||
+                item.keywords.some(k => k.toLowerCase().includes(query))
+            );
+
+            if (matches.length === 0) {
+                resultsBox.innerHTML = '<div class="home-search-no-result">نتیجه‌ای یافت نشد</div>';
+            } else {
+                resultsBox.innerHTML = matches.map((item, idx) => `
+                    <div class="home-search-result-item" onclick="selectHomeSearchResult(${SITE_SEARCH_ITEMS.indexOf(item)})">
+                        <i class="${item.icon}"></i>
+                        <span>${escapeHtml(item.title)}</span>
+                    </div>
+                `).join('');
+            }
+            resultsBox.classList.add('show');
+        }
+
+        function selectHomeSearchResult(index) {
+            const item = SITE_SEARCH_ITEMS[index];
+            if (!item) return;
+
+            const resultsBox = document.getElementById('homeSearchResults');
+            if (resultsBox) { resultsBox.classList.remove('show'); resultsBox.innerHTML = ''; }
+
+            const input = document.getElementById('homeSearchInput');
+            if (input) input.value = '';
+
+            item.action();
         }
 
         function searchTag(tag) {
@@ -5253,6 +5306,14 @@
                 handleHomeSearch(tag);
             }
         }
+
+        document.addEventListener('click', function (e) {
+            const container = document.getElementById('homeSearchInput')?.closest('.search-container');
+            const resultsBox = document.getElementById('homeSearchResults');
+            if (resultsBox && container && !container.contains(e.target)) {
+                resultsBox.classList.remove('show');
+            }
+        });
 
         function filterPrompts() {
             renderPrompts();

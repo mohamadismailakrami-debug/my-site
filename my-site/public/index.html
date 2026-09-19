@@ -4007,7 +4007,80 @@
             }
         }
 
-        function sendAiMessage() {
+        async function getChatCompletion(provider, key, baseUrl, modelId, message) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+            try {
+                if (provider === 'gemini') {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(key)}`;
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] }),
+                        signal: controller.signal
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok || data.error) throw new Error(data.error?.message || `کد خطای سرور گوگل: HTTP ${res.status}`);
+                    const text = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+                    if (!text) throw new Error('پاسخی از مدل دریافت نشد.');
+                    return text;
+                }
+
+                if (provider === 'anthropic') {
+                    const res = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': key,
+                            'anthropic-version': '2023-06-01',
+                            'anthropic-dangerous-direct-browser-access': 'true'
+                        },
+                        body: JSON.stringify({ model: modelId, max_tokens: 1024, messages: [{ role: 'user', content: message }] }),
+                        signal: controller.signal
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok || data.error) throw new Error(data.error?.message || `کد خطای آنتروپیک: HTTP ${res.status}`);
+                    const text = (data.content || []).map(c => c.text || '').join('');
+                    if (!text) throw new Error('پاسخی از مدل دریافت نشد.');
+                    return text;
+                }
+
+                // سرویس‌دهنده‌های سازگار با فرمت OpenAI: openai, groq, deepseek, openrouter, custom
+                const defaultBaseUrls = {
+                    openai: 'https://api.openai.com/v1',
+                    groq: 'https://api.groq.com/openai/v1',
+                    deepseek: 'https://api.deepseek.com',
+                    openrouter: 'https://openrouter.ai/api/v1'
+                };
+                const base = (baseUrl || defaultBaseUrls[provider] || 'https://api.openai.com/v1').replace(/\/+$/, '');
+                const endpoint = `${base}/chat/completions`;
+
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify({ model: modelId, messages: [{ role: 'user', content: message }] }),
+                    signal: controller.signal
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.error) throw new Error(data.error?.message || `کد خطا: HTTP ${res.status}`);
+                const text = data.choices?.[0]?.message?.content || '';
+                if (!text) throw new Error('پاسخی از مدل دریافت نشد.');
+                return text;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    throw new Error('زمان پاسخگویی به پایان رسید (Timeout). لطفاً دوباره تلاش کنید.');
+                }
+                throw err;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        async function sendAiMessage() {
             const input = document.getElementById('aiComposerInput');
             const message = (input?.value || '').trim();
             if (!message) return;
@@ -4025,40 +4098,25 @@
             const loadingId = 'aiLoading_' + Date.now();
             appendAiLoadingBubble(loadingId);
 
-            // Call API or Simulator
-            const usingCustom = isUsingCustomKey();
             const custom = getUserCustomApiKey();
-            const modelName = selectedAiModel ? selectedAiModel.name : 'Gemini 2.5 Flash';
-
-            setTimeout(() => {
+            if (!custom || !custom.key) {
                 removeAiElement(loadingId);
+                appendAiChatMessage('assistant', 'برای دریافت پاسخ واقعی از هوش مصنوعی، ابتدا باید یک کلید API معتبر تنظیم کنید. از منوی هوش مصنوعی گزینه‌ی «تنظیم کلید API شخصی» را انتخاب و کلید خود را وارد و اعتبارسنجی کنید.');
+                showNotification('کلید API تنظیم نشده است', 'error');
+                return;
+            }
 
-                let reply = `پاسخ پردازش شده توسط مدل **${modelName}**:
+            const modelId = selectedAiModel?.id || custom.selectedModelId;
 
-`;
-                if (usingCustom) {
-                    reply += `این پاسخ از طریق **ای‌پی‌آی شخصی شما** (${getProviderDisplayName(custom.provider)}) پردازش شده است.
-
-`;
-                } else {
-                    reply += `این پاسخ با سهمیه عمومی پلتفرم PERAMT و تنظیمات تایید شده توسط مدیر ارائه شده است.
-
-`;
-                }
-
-                if (isWebSearchEnabled) {
-                    reply += `🔍 *نتایج جستجوی وب اعمال شد.*
-
-`;
-                }
-
-                reply += `درباره سوال شما:
-> ${message}
-
-هوش مصنوعی PERAMT آماده پاسخگویی به ادامه مکالمه، ویرایش محتوا، نوشتن کدهای تخصصی و تحلیل اسناد شماست.`;
-
-                appendAiChatMessage('assistant', reply);
-            }, 1000);
+            try {
+                const replyText = await getChatCompletion(custom.provider, custom.key, custom.baseUrl, modelId, message);
+                removeAiElement(loadingId);
+                appendAiChatMessage('assistant', replyText);
+            } catch (err) {
+                removeAiElement(loadingId);
+                appendAiChatMessage('assistant', `⚠️ خطا در دریافت پاسخ از هوش مصنوعی: ${escapeHtml(err.message)}`);
+                showNotification(`خطا: ${err.message}`, 'error');
+            }
         }
 
         function appendAiChatMessage(role, text) {

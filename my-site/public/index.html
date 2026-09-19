@@ -2834,6 +2834,7 @@
 
         // App State
         let currentUser = null;
+        const ADMIN_IDENTIFIERS = ['admin', 'mohamadismailakrami@gmail.com']; // TODO: با اتصال Supabase Auth، نقش باید از دیتابیس خوانده شود، نه از این لیست ثابت
         let selectedAiModel = null;
         let activePromptCategory = 'همه';
         let isWebSearchEnabled = false;
@@ -5043,7 +5044,7 @@
             const id = document.getElementById('loginIdentifier').value.trim();
             const pass = document.getElementById('loginPassword').value.trim();
 
-            const role = (id === 'admin') ? 'admin' : 'user'; // TODO: احراز هویت واقعی باید سمت سرور (Supabase Auth) انجام شود
+            const role = ADMIN_IDENTIFIERS.includes(id.toLowerCase()) ? 'admin' : 'user'; // TODO: احراز هویت واقعی باید سمت سرور (Supabase Auth) انجام شود
 
             currentUser = {
                 name: id.includes('@') ? id.split('@')[0] : (id === 'admin' ? 'مدیر ارشد' : id),
@@ -5069,7 +5070,7 @@
             currentUser = {
                 name: name,
                 identifier: email,
-                role: 'user'
+                role: ADMIN_IDENTIFIERS.includes(email.toLowerCase()) ? 'admin' : 'user'
             };
 
             localStorage.setItem('peramt_session', JSON.stringify(currentUser));

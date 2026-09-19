@@ -1577,6 +1577,146 @@
             justify-content: center;
             flex-shrink: 0;
         }
+
+        /* API Validation & Discovered Models UI */
+        .api-validation-status {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .api-validation-status.success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #10b981;
+        }
+        .api-validation-status.error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+        .api-validation-status.loading {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #3b82f6;
+        }
+        .discovered-models-box {
+            background: var(--card-inner-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+        .discovered-models-box .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .discovered-models-box .box-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .discovered-models-box .box-count {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+        .discovered-models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .discovered-model-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .discovered-model-card:hover {
+            border-color: #10b981;
+            transform: translateY(-1px);
+        }
+        .discovered-model-card.selected {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.08);
+            box-shadow: 0 0 0 1px #10b981;
+        }
+        .discovered-model-name {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .discovered-model-id {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-family: monospace;
+            direction: ltr;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .discovered-model-badge {
+            align-self: flex-start;
+            font-size: 0.65rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+        .btn-validate-api {
+            width: 100%;
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+            border: 1px solid #10b981;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+        }
+        .btn-validate-api:hover {
+            background: #10b981;
+            color: #ffffff;
+        }
+        .btn-validate-api:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -2019,6 +2159,7 @@
 
             <!-- TAB 6: GENERAL SETTINGS -->
             <div id="adminTabSettings" class="admin-tab-content">
+                <!-- تنظیمات اتصال پایگاه داده -->
                 <div class="admin-panel-box">
                     <div class="admin-panel-title"><span><i class="fa-solid fa-gear" style="color: #10b981;"></i> تنظیمات اتصال و پایگاه داده (Supabase)</span></div>
                     <div class="form-group">
@@ -2030,6 +2171,72 @@
                         <input type="text" id="adminSupabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6...">
                     </div>
                     <button class="modal-submit" type="button" onclick="saveAdminBackendSettings()"><i class="fa-solid fa-floppy-disk"></i> ذخیره تنظیمات پایگاه داده</button>
+                </div>
+
+                <!-- تنظیم، اعتبارسنجی و استعلام مدل‌های کلید API اختصاصی -->
+                <div class="admin-panel-box" style="margin-top: 25px;">
+                    <div class="admin-panel-title">
+                        <span><i class="fa-solid fa-key" style="color: #10b981;"></i> تنظیم، اعتبارسنجی و استعلام مدل‌های کلید API اختصاصی</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.7;">
+                        در صورتی که می‌خواهید از کلید API شخصی خود استفاده کنید، می‌توانید ارائه‌دهنده و کلید خود را در این بخش وارد کنید. با زدن دکمه <strong>«اعتبارسنجی کلید و دریافت مدل‌ها»</strong>، اتصال کلید تست شده و کلیه مدل‌هایی که با این کلید قابل دسترسی هستند نمایش داده می‌شوند.
+                    </p>
+
+                    <form id="adminCustomApiKeyForm" onsubmit="handleSaveCustomApiKeyFromAdmin(event)">
+                        <div class="form-group">
+                            <label>سرویس‌دهنده هوش مصنوعی: <span>*</span></label>
+                            <select id="adminCustomApiKeyProvider" onchange="handleAdminApiKeyProviderChange(this.value)">
+                                <option value="gemini">Google Gemini API</option>
+                                <option value="openai">OpenAI (ChatGPT)</option>
+                                <option value="groq">Groq Cloud API</option>
+                                <option value="anthropic">Anthropic (Claude)</option>
+                                <option value="deepseek">DeepSeek AI</option>
+                                <option value="openrouter">OpenRouter (تمامی مدل‌ها)</option>
+                                <option value="custom">آدرس دلخواه سازگار با OpenAI</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>کلید API اختصاصی شما: <span>*</span></label>
+                            <div class="auth-input-wrapper">
+                                <input type="password" id="adminCustomApiKeyValue" placeholder="AIzaSy... یا sk-proj-... یا gsk_..." required>
+                                <i class="fa-regular fa-eye auth-input-icon" onclick="togglePasswordVisibility('adminCustomApiKeyValue', this)"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="adminCustomApiBaseUrlGroup" style="display: none;">
+                            <label>آدرس Base URL (اختیاری یا سفارشی):</label>
+                            <input type="url" id="adminCustomApiBaseUrl" placeholder="https://api.openai.com/v1">
+                        </div>
+
+                        <!-- دکمه تست و اعتبارسنجی -->
+                        <button class="btn-validate-api" type="button" id="adminBtnValidateApiKey" onclick="validateAndDiscoverModels('admin')">
+                            <i class="fa-solid fa-shield-halved"></i> اعتبارسنجی کلید و استعلام مدل‌های در دسترس
+                        </button>
+
+                        <!-- پیام نتیجه اعتبارسنجی -->
+                        <div id="adminValidationStatusBox" class="api-validation-status" style="display: none;"></div>
+
+                        <!-- بخش نمایش مدل‌های در دسترس کشف‌شده با این API -->
+                        <div id="adminDiscoveredModelsSection" class="discovered-models-box" style="display: none;">
+                            <div class="box-header">
+                                <div class="box-title">
+                                    <i class="fa-solid fa-microchip"></i>
+                                    <span>مدل‌های قابل دسترسی با این کلید API:</span>
+                                </div>
+                                <span class="box-count" id="adminDiscoveredModelsCount">0 مدل</span>
+                            </div>
+                            <div class="discovered-models-grid" id="adminDiscoveredModelsList"></div>
+                            <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 8px;">
+                                <i class="fa-solid fa-circle-info"></i> می‌توانید با کلیک روی هر مدل، آن را به عنوان مدل فعال انتخاب کنید.
+                            </p>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="modal-submit" type="submit" style="flex: 1;"><i class="fa-solid fa-check"></i> ذخیره و فعال‌سازی این کلید شخصی</button>
+                            <button class="modal-cancel" type="button" id="adminBtnRemoveApiKey" onclick="disableCustomApiKey()" style="display: none; color: #ef4444; border-color: rgba(239,68,68,0.3); width: auto; padding: 10px 18px;"><i class="fa-solid fa-trash-can"></i> حذف کلید شخصی</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </section>
@@ -2485,7 +2692,7 @@
 
     <!-- CUSTOM API KEY MODAL (USER PERSONAL API CONFIGURATION) -->
     <div id="customApiKeyModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'customApiKeyModal')">
-        <div class="modal-box">
+        <div class="modal-box" style="width: 520px;">
             <span class="close-modal" onclick="closeModal('customApiKeyModal')">&times;</span>
             <div class="modal-title"><i class="fa-solid fa-key" style="color: #10b981;"></i> تنظیم کلید API شخصی</div>
 
@@ -2500,6 +2707,7 @@
                     <select id="customApiKeyProvider" onchange="handleCustomApiKeyProviderChange(this.value)">
                         <option value="gemini">Google Gemini API</option>
                         <option value="openai">OpenAI (ChatGPT)</option>
+                        <option value="groq">Groq Cloud API</option>
                         <option value="anthropic">Anthropic (Claude)</option>
                         <option value="deepseek">DeepSeek AI</option>
                         <option value="openrouter">OpenRouter (همه مدل‌ها)</option>
@@ -2510,7 +2718,7 @@
                 <div class="form-group">
                     <label>کلید API اختصاصی شما: <span>*</span></label>
                     <div class="auth-input-wrapper">
-                        <input type="password" id="customApiKeyValue" placeholder="AIzaSy... یا sk-proj-..." required>
+                        <input type="password" id="customApiKeyValue" placeholder="AIzaSy... یا sk-proj-... یا gsk_..." required>
                         <i class="fa-regular fa-eye auth-input-icon" onclick="togglePasswordVisibility('customApiKeyValue', this)"></i>
                     </div>
                 </div>
@@ -2518,6 +2726,29 @@
                 <div class="form-group" id="customApiBaseUrlGroup" style="display: none;">
                     <label>آدرس Base URL (اختیاری یا سفارشی):</label>
                     <input type="url" id="customApiBaseUrl" placeholder="https://api.openai.com/v1">
+                </div>
+
+                <!-- دکمه اعتبارسنجی و استعلام مدل‌ها -->
+                <button class="btn-validate-api" type="button" id="modalBtnValidateApiKey" onclick="validateAndDiscoverModels('modal')">
+                    <i class="fa-solid fa-shield-halved"></i> اعتبارسنجی کلید و استعلام مدل‌های در دسترس
+                </button>
+
+                <!-- پیام نتیجه اعتبارسنجی -->
+                <div id="modalValidationStatusBox" class="api-validation-status" style="display: none;"></div>
+
+                <!-- بخش نمایش مدل‌های در دسترس -->
+                <div id="modalDiscoveredModelsSection" class="discovered-models-box" style="display: none;">
+                    <div class="box-header">
+                        <div class="box-title">
+                            <i class="fa-solid fa-microchip"></i>
+                            <span>مدل‌های قابل دسترسی با این کلید API:</span>
+                        </div>
+                        <span class="box-count" id="modalDiscoveredModelsCount">0 مدل</span>
+                    </div>
+                    <div class="discovered-models-grid" id="modalDiscoveredModelsList"></div>
+                    <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 8px;">
+                        <i class="fa-solid fa-circle-info"></i> می‌توانید با کلیک روی هر مدل، آن را به عنوان مدل پیش‌فرض انتخاب کنید.
+                    </p>
                 </div>
 
                 <button class="modal-submit" type="submit"><i class="fa-solid fa-check"></i> ذخیره و فعال‌سازی کلید شخصی</button>
@@ -2728,7 +2959,10 @@
 
         // Models available when using a personal key
         function getAvailableModelsForCustomKey(custom) {
-            const p = (custom.provider || 'gemini').toLowerCase();
+            if (custom && Array.isArray(custom.models) && custom.models.length > 0) {
+                return custom.models;
+            }
+            const p = (custom?.provider || 'gemini').toLowerCase();
             if (p === 'gemini') {
                 return [
                     { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'توصیه شده' },
@@ -2743,8 +2977,15 @@
                     { id: 'o3-mini', name: 'o3-mini', badge: 'استدلال' },
                     { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', badge: 'کامل' }
                 ];
+            } else if (p === 'groq') {
+                return [
+                    { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', badge: 'جامع و دقیق' },
+                    { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', badge: 'فوق‌العاده سریع' },
+                    { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', badge: 'قدرتمند' }
+                ];
             } else if (p === 'anthropic') {
                 return [
+                    { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', badge: 'جدیدترین نسخه' },
                     { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', badge: 'نگارش' },
                     { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', badge: 'سریع' },
                     { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', badge: 'قدرتمند' }
@@ -2753,6 +2994,12 @@
                 return [
                     { id: 'deepseek-chat', name: 'DeepSeek V3', badge: 'عمومی' },
                     { id: 'deepseek-reasoner', name: 'DeepSeek R1', badge: 'استدلال' }
+                ];
+            } else if (p === 'openrouter') {
+                return [
+                    { id: 'openrouter/auto', name: 'OpenRouter Auto', badge: 'خودکار' },
+                    { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'سریع' },
+                    { id: 'openai/gpt-4o', name: 'GPT-4o', badge: 'پیشرفته' }
                 ];
             } else {
                 return [
@@ -2874,6 +3121,7 @@
             switch(providerKey) {
                 case 'gemini': return 'Google Gemini';
                 case 'openai': return 'OpenAI (ChatGPT)';
+                case 'groq': return 'Groq Cloud';
                 case 'anthropic': return 'Anthropic (Claude)';
                 case 'deepseek': return 'DeepSeek AI';
                 case 'openrouter': return 'OpenRouter';
@@ -2923,7 +3171,12 @@
             showNotification(`مدل «${modelName}» با موفقیت فعال شد`);
         }
 
-        // Custom API Key Actions
+        // ==========================================
+        // CUSTOM API KEY ACTIONS & VALIDATION
+        // ==========================================
+        let lastDiscoveredModels = { modal: [], admin: [] };
+        let lastSelectedDiscoveredModel = { modal: null, admin: null };
+
         function handleCustomApiKeyProviderChange(val) {
             const baseGroup = document.getElementById('customApiBaseUrlGroup');
             if (baseGroup) {
@@ -2931,39 +3184,456 @@
             }
         }
 
-        function handleSaveCustomApiKey(e) {
-            e.preventDefault();
-            const provider = document.getElementById('customApiKeyProvider').value;
-            const key = document.getElementById('customApiKeyValue').value.trim();
-            const baseUrl = document.getElementById('customApiBaseUrl').value.trim();
+        function handleAdminApiKeyProviderChange(val) {
+            const baseGroup = document.getElementById('adminCustomApiBaseUrlGroup');
+            if (baseGroup) {
+                baseGroup.style.display = (val === 'custom' || val === 'openrouter') ? 'block' : 'none';
+            }
+        }
 
+        function loadCustomApiKeyFormValues(prefix = 'modal') {
+            const custom = getUserCustomApiKey();
+            const providerEl = document.getElementById(prefix === 'admin' ? 'adminCustomApiKeyProvider' : 'customApiKeyProvider');
+            const keyEl = document.getElementById(prefix === 'admin' ? 'adminCustomApiKeyValue' : 'customApiKeyValue');
+            const baseEl = document.getElementById(prefix === 'admin' ? 'adminCustomApiBaseUrl' : 'customApiBaseUrl');
+            const btnRemove = document.getElementById(prefix === 'admin' ? 'adminBtnRemoveApiKey' : 'btnRemoveCustomApiKey');
+
+            if (custom && custom.key) {
+                if (providerEl) providerEl.value = custom.provider || 'gemini';
+                if (keyEl) keyEl.value = custom.key;
+                if (baseEl) baseEl.value = custom.baseUrl || '';
+                if (btnRemove) btnRemove.style.display = 'block';
+
+                if (prefix === 'admin') {
+                    handleAdminApiKeyProviderChange(providerEl ? providerEl.value : 'gemini');
+                } else {
+                    handleCustomApiKeyProviderChange(providerEl ? providerEl.value : 'gemini');
+                }
+
+                const models = (custom.models && custom.models.length > 0) 
+                    ? custom.models 
+                    : getAvailableModelsForCustomKey(custom);
+
+                lastDiscoveredModels[prefix] = models;
+                if (custom.selectedModelId) {
+                    const sel = models.find(m => m.id === custom.selectedModelId);
+                    if (sel) lastSelectedDiscoveredModel[prefix] = sel;
+                }
+                renderDiscoveredModelsUI(prefix, models, true);
+            } else {
+                if (keyEl) keyEl.value = '';
+                if (baseEl) baseEl.value = '';
+                if (btnRemove) btnRemove.style.display = 'none';
+                const section = document.getElementById(prefix === 'admin' ? 'adminDiscoveredModelsSection' : 'modalDiscoveredModelsSection');
+                if (section) section.style.display = 'none';
+                const statusBox = document.getElementById(prefix === 'admin' ? 'adminValidationStatusBox' : 'modalValidationStatusBox');
+                if (statusBox) statusBox.style.display = 'none';
+            }
+        }
+
+        async function testApiKeyAndFetchModels(provider, key, baseUrl) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+            try {
+                if (provider === 'gemini') {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
+                    const res = await fetch(url, { signal: controller.signal });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || data.error) {
+                        throw new Error(data.error?.message || `کد خطای سرور گوگل: HTTP ${res.status}`);
+                    }
+
+                    const models = (data.models || [])
+                        .filter(m => (m.supportedGenerationMethods || []).includes('generateContent') || m.name?.includes('gemini'))
+                        .map(m => {
+                            const cleanId = m.name.replace(/^models\//, '');
+                            let badge = 'پایدار';
+                            if (cleanId.includes('flash')) badge = 'سریع و بهینه';
+                            else if (cleanId.includes('pro')) badge = 'استدلال پیشرفته';
+                            else if (cleanId.includes('2.0') || cleanId.includes('2.5')) badge = 'نسخه جدید';
+                            return {
+                                id: cleanId,
+                                name: m.displayName || cleanId,
+                                badge: badge
+                            };
+                        });
+
+                    if (models.length === 0) {
+                        return [
+                            { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'سریع و هوشمند' },
+                            { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', badge: 'استدلال پیشرفته' },
+                            { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', badge: 'چندحالته' }
+                        ];
+                    }
+                    return models;
+                }
+
+                if (provider === 'openai') {
+                    const endpoint = `${(baseUrl || 'https://api.openai.com/v1').replace(/\/+$/, '')}/models`;
+                    const res = await fetch(endpoint, {
+                        headers: { 'Authorization': `Bearer ${key}` },
+                        signal: controller.signal
+                    });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || data.error) {
+                        throw new Error(data.error?.message || `کد خطای OpenAI: HTTP ${res.status}`);
+                    }
+
+                    const all = (data.data || []).map(m => m.id);
+                    const chatIds = all.filter(id => /^(gpt|o1|o3|chatgpt)/i.test(id) && !id.includes('realtime') && !id.includes('audio') && !id.includes('transcription'));
+                    const targetList = chatIds.length > 0 ? chatIds : all.slice(0, 20);
+
+                    return targetList.sort().map(id => ({
+                        id: id,
+                        name: id,
+                        badge: id.includes('mini') ? 'سبک و سریع' : (id.includes('o1') || id.includes('o3')) ? 'استدلال عمیق' : 'مدل هوشمند'
+                    }));
+                }
+
+                if (provider === 'groq') {
+                    const endpoint = 'https://api.groq.com/openai/v1/models';
+                    const res = await fetch(endpoint, {
+                        headers: { 'Authorization': `Bearer ${key}` },
+                        signal: controller.signal
+                    });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || data.error) {
+                        throw new Error(data.error?.message || `کد خطای Groq: HTTP ${res.status}`);
+                    }
+
+                    return (data.data || [])
+                        .filter(m => m.active !== false && !m.id.includes('whisper'))
+                        .map(m => ({
+                            id: m.id,
+                            name: m.id,
+                            badge: m.id.includes('versatile') ? 'جامع و دقیق' : m.id.includes('instant') ? 'فوق‌العاده سریع' : 'پردازش ابری'
+                        }));
+                }
+
+                if (provider === 'deepseek') {
+                    const endpoint = 'https://api.deepseek.com/models';
+                    const res = await fetch(endpoint, {
+                        headers: { 'Authorization': `Bearer ${key}` },
+                        signal: controller.signal
+                    });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || data.error) {
+                        throw new Error(data.error?.message || `کد خطای DeepSeek: HTTP ${res.status}`);
+                    }
+
+                    return (data.data || []).map(m => ({
+                        id: m.id,
+                        name: m.id === 'deepseek-chat' ? 'DeepSeek Chat (V3)' : m.id === 'deepseek-reasoner' ? 'DeepSeek Reasoner (R1)' : m.id,
+                        badge: m.id.includes('reasoner') ? 'استدلال پیشرفته R1' : 'گفتگوی همه‌منظوره V3'
+                    }));
+                }
+
+                if (provider === 'openrouter') {
+                    const authRes = await fetch('https://openrouter.ai/api/v1/auth/key', {
+                        headers: { 'Authorization': `Bearer ${key}` },
+                        signal: controller.signal
+                    });
+                    const authData = await authRes.json().catch(() => ({}));
+
+                    if (!authRes.ok || authData.error) {
+                        throw new Error(authData.error?.message || `کد خطای OpenRouter: HTTP ${authRes.status}`);
+                    }
+
+                    const modelsRes = await fetch('https://openrouter.ai/api/v1/models', { signal: controller.signal });
+                    if (modelsRes.ok) {
+                        const mData = await modelsRes.json().catch(() => ({}));
+                        const list = (mData.data || []).slice(0, 30).map(m => ({
+                            id: m.id,
+                            name: m.name || m.id,
+                            badge: m.context_length ? `${Math.round(m.context_length / 1024)}k کانتکست` : 'فعال'
+                        }));
+                        if (list.length > 0) return list;
+                    }
+
+                    return [
+                        { id: 'openrouter/auto', name: 'OpenRouter Auto (خودکار)', badge: 'پیش‌فرض' },
+                        { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'سریع' },
+                        { id: 'openai/gpt-4o', name: 'GPT-4o', badge: 'پیشرفته' },
+                        { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', badge: 'نگارش' },
+                        { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', badge: 'ارزان' }
+                    ];
+                }
+
+                if (provider === 'anthropic') {
+                    try {
+                        const res = await fetch('https://api.anthropic.com/v1/models', {
+                            headers: {
+                                'x-api-key': key,
+                                'anthropic-version': '2023-06-01',
+                                'dangerously-allow-browser': 'true',
+                                'anthropic-dangerous-direct-browser-access': 'true'
+                            },
+                            signal: controller.signal
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (res.ok && data.data) {
+                            return data.data.map(m => ({
+                                id: m.id,
+                                name: m.display_name || m.id,
+                                badge: 'آنتروپیک'
+                            }));
+                        }
+                    } catch (corsErr) {
+                        if (!key.startsWith('sk-ant-')) {
+                            throw new Error('فرمت کلید کلود نامعتبر است (باید با sk-ant- شروع شود).');
+                        }
+                    }
+
+                    return [
+                        { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', badge: 'جدیدترین نسخه' },
+                        { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', badge: 'نگارش و تحلیل' },
+                        { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', badge: 'فوق‌العاده سریع' },
+                        { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', badge: 'پردازش سنگین' }
+                    ];
+                }
+
+                if (provider === 'custom') {
+                    const endpoint = `${(baseUrl || 'https://api.openai.com/v1').replace(/\/+$/, '')}/models`;
+                    const headers = key ? { 'Authorization': `Bearer ${key}` } : {};
+                    const res = await fetch(endpoint, { headers, signal: controller.signal });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || data.error) {
+                        throw new Error(data.error?.message || `خطای اتصال به سرور سفارشی: HTTP ${res.status}`);
+                    }
+
+                    const list = (data.data || data.models || []);
+                    if (list.length === 0) {
+                        return [{ id: 'custom-model', name: 'مدل فعال سرور سفارشی', badge: 'سفارشی' }];
+                    }
+
+                    return list.map(m => ({
+                        id: typeof m === 'string' ? m : (m.id || m.name),
+                        name: typeof m === 'string' ? m : (m.name || m.id),
+                        badge: 'سفارشی'
+                    }));
+                }
+
+                throw new Error('سرویس‌دهنده انتخابی پشتیبانی نمی‌شود.');
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    throw new Error('زمان پاسخگویی به پایان رسید (Timeout). لطفاً ارتباط اینترنت را بررسی کنید.');
+                }
+                throw err;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        async function validateAndDiscoverModels(context = 'modal') {
+            const providerEl = document.getElementById(context === 'admin' ? 'adminCustomApiKeyProvider' : 'customApiKeyProvider');
+            const keyEl = document.getElementById(context === 'admin' ? 'adminCustomApiKeyValue' : 'customApiKeyValue');
+            const baseEl = document.getElementById(context === 'admin' ? 'adminCustomApiBaseUrl' : 'customApiBaseUrl');
+            const btnEl = document.getElementById(context === 'admin' ? 'adminBtnValidateApiKey' : 'modalBtnValidateApiKey');
+            const statusBox = document.getElementById(context === 'admin' ? 'adminValidationStatusBox' : 'modalValidationStatusBox');
+
+            const provider = providerEl ? providerEl.value : 'gemini';
+            const key = keyEl ? keyEl.value.trim() : '';
+            const baseUrl = baseEl ? baseEl.value.trim() : '';
+
+            if (!key) {
+                if (statusBox) {
+                    statusBox.className = 'api-validation-status error';
+                    statusBox.style.display = 'flex';
+                    statusBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>لطفاً ابتدا کلید API را وارد کنید.</span>';
+                }
+                showNotification('لطفاً کلید API را وارد کنید', 'error');
+                return;
+            }
+
+            const originalBtnHtml = btnEl ? btnEl.innerHTML : '';
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> در حال اعتبارسنجی و استعلام مدل‌ها...';
+            }
+
+            if (statusBox) {
+                statusBox.className = 'api-validation-status loading';
+                statusBox.style.display = 'flex';
+                statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>در حال ارتباط با سرور و استعلام مدل‌های مجاز...</span>';
+            }
+
+            try {
+                const models = await testApiKeyAndFetchModels(provider, key, baseUrl);
+                lastDiscoveredModels[context] = models;
+
+                if (statusBox) {
+                    statusBox.className = 'api-validation-status success';
+                    statusBox.style.display = 'flex';
+                    statusBox.innerHTML = `<i class="fa-solid fa-circle-check"></i><span><strong>اعتبارسنجی با موفقیت انجام شد!</strong> کلید API معتبر است و تعداد <strong>${models.length}</strong> مدل قابل دسترسی با این کلید شناسایی گردید.</span>`;
+                }
+
+                renderDiscoveredModelsUI(context, models, false);
+                showNotification(`کلید معتبر است! ${models.length} مدل کشف شد`);
+            } catch (err) {
+                console.error('Validation error:', err);
+                if (statusBox) {
+                    statusBox.className = 'api-validation-status error';
+                    statusBox.style.display = 'flex';
+                    statusBox.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i><span><strong>اعتبارسنجی ناموفق بود:</strong> ${escapeHtml(err.message)}</span>`;
+                }
+                showNotification(`خطا در اعتبارسنجی: ${err.message}`, 'error');
+            } finally {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = originalBtnHtml;
+                }
+            }
+        }
+
+        function renderDiscoveredModelsUI(context, models, isPreloaded = false) {
+            const countEl = document.getElementById(context === 'admin' ? 'adminDiscoveredModelsCount' : 'modalDiscoveredModelsCount');
+            const listEl = document.getElementById(context === 'admin' ? 'adminDiscoveredModelsList' : 'modalDiscoveredModelsList');
+            const sectionEl = document.getElementById(context === 'admin' ? 'adminDiscoveredModelsSection' : 'modalDiscoveredModelsSection');
+
+            if (!listEl || !sectionEl) return;
+
+            if (countEl) countEl.innerText = `${models.length} مدل در دسترس`;
+            listEl.innerHTML = '';
+
+            const currentSelected = lastSelectedDiscoveredModel[context] || selectedAiModel;
+
+            models.forEach(m => {
+                const isSelected = currentSelected && currentSelected.id === m.id;
+                const card = document.createElement('div');
+                card.className = `discovered-model-card ${isSelected ? 'selected' : ''}`;
+                card.onclick = () => selectDiscoveredModel(m.id, m.name, context);
+                card.title = `شناسه مدل: ${m.id}`;
+                card.innerHTML = `
+                    <div class="discovered-model-name">
+                        <i class="fa-solid fa-microchip" style="color: #10b981; font-size: 0.75rem;"></i>
+                        <span>${escapeHtml(m.name)}</span>
+                    </div>
+                    <div class="discovered-model-id">${escapeHtml(m.id)}</div>
+                    <span class="discovered-model-badge">${escapeHtml(m.badge || 'فعال')}</span>
+                `;
+                listEl.appendChild(card);
+            });
+
+            sectionEl.style.display = 'block';
+        }
+
+        function selectDiscoveredModel(modelId, modelName, context) {
+            lastSelectedDiscoveredModel[context] = { id: modelId, name: modelName };
+            selectedAiModel = { id: modelId, name: modelName };
+
+            // Update cards selection UI
+            ['modal', 'admin'].forEach(ctx => {
+                const listEl = document.getElementById(ctx === 'admin' ? 'adminDiscoveredModelsList' : 'modalDiscoveredModelsList');
+                if (listEl) {
+                    Array.from(listEl.children).forEach(card => {
+                        const idEl = card.querySelector('.discovered-model-id');
+                        if (idEl && idEl.innerText.trim() === modelId) {
+                            card.classList.add('selected');
+                        } else {
+                            card.classList.remove('selected');
+                        }
+                    });
+                }
+            });
+
+            const pillSpan = document.getElementById('aiModelPillName');
+            const activeLabel = document.getElementById('aiActiveModelLabel');
+            if (pillSpan) pillSpan.innerText = modelName;
+            if (activeLabel) activeLabel.innerText = `کلید شخصی: ${modelName}`;
+
+            showNotification(`مدل انتخابی: «${modelName}» تعیین گردید`);
+        }
+
+        function saveCustomApiKeyData(provider, key, baseUrl, models, chosenModel, context) {
             if (!key) {
                 showNotification('لطفاً کلید API را وارد کنید', 'error');
                 return;
             }
 
+            const modelList = (models && models.length > 0)
+                ? models
+                : getAvailableModelsForCustomKey({ provider });
+
+            const activeModel = chosenModel || modelList[0] || { id: 'custom-model', name: 'مدل کلید اختصاصی' };
+
             const customObj = {
                 provider: provider,
                 key: key,
                 baseUrl: baseUrl,
+                models: modelList,
+                selectedModelId: activeModel.id,
                 setAt: new Date().toISOString()
             };
 
             localStorage.setItem(CUSTOM_USER_API_KEY, JSON.stringify(customObj));
-            closeModal('customApiKeyModal');
+            selectedAiModel = activeModel;
+
+            // Sync other form
+            const otherPrefix = context === 'admin' ? 'modal' : 'admin';
+            loadCustomApiKeyFormValues(otherPrefix);
+
+            if (context === 'modal') {
+                closeModal('customApiKeyModal');
+            }
+
             updateCustomApiKeyBadgeUI();
             updateActiveModelSelection();
             renderModelDropdown();
-            showNotification('کلید API اختصاصی شما با موفقیت ذخیره شد. چت‌باکس اکنون فقط مدل‌های کلید شخصی شما را نمایش می‌دهد.');
+            showNotification(`کلید API اختصاصی شما با ${modelList.length} مدل فعال ذخیره شد.`);
+        }
+
+        function handleSaveCustomApiKey(e) {
+            e.preventDefault();
+            const provider = document.getElementById('customApiKeyProvider').value;
+            const key = document.getElementById('customApiKeyValue').value.trim();
+            const baseUrl = document.getElementById('customApiBaseUrl').value.trim();
+            const models = lastDiscoveredModels['modal'];
+            const chosenModel = lastSelectedDiscoveredModel['modal'];
+
+            saveCustomApiKeyData(provider, key, baseUrl, models, chosenModel, 'modal');
+        }
+
+        function handleSaveCustomApiKeyFromAdmin(e) {
+            e.preventDefault();
+            const provider = document.getElementById('adminCustomApiKeyProvider').value;
+            const key = document.getElementById('adminCustomApiKeyValue').value.trim();
+            const baseUrl = document.getElementById('adminCustomApiBaseUrl').value.trim();
+            const models = lastDiscoveredModels['admin'];
+            const chosenModel = lastSelectedDiscoveredModel['admin'];
+
+            saveCustomApiKeyData(provider, key, baseUrl, models, chosenModel, 'admin');
         }
 
         function disableCustomApiKey() {
             localStorage.removeItem(CUSTOM_USER_API_KEY);
+            lastDiscoveredModels = { modal: [], admin: [] };
+            lastSelectedDiscoveredModel = { modal: null, admin: null };
+
+            ['modal', 'admin'].forEach(prefix => {
+                const keyEl = document.getElementById(prefix === 'admin' ? 'adminCustomApiKeyValue' : 'customApiKeyValue');
+                const baseEl = document.getElementById(prefix === 'admin' ? 'adminCustomApiBaseUrl' : 'customApiBaseUrl');
+                const btnRemove = document.getElementById(prefix === 'admin' ? 'adminBtnRemoveApiKey' : 'btnRemoveCustomApiKey');
+                const statusBox = document.getElementById(prefix === 'admin' ? 'adminValidationStatusBox' : 'modalValidationStatusBox');
+                const section = document.getElementById(prefix === 'admin' ? 'adminDiscoveredModelsSection' : 'modalDiscoveredModelsSection');
+
+                if (keyEl) keyEl.value = '';
+                if (baseEl) baseEl.value = '';
+                if (btnRemove) btnRemove.style.display = 'none';
+                if (statusBox) statusBox.style.display = 'none';
+                if (section) section.style.display = 'none';
+            });
+
             closeModal('customApiKeyModal');
             updateCustomApiKeyBadgeUI();
             updateActiveModelSelection();
             renderModelDropdown();
-            showNotification('کلید شخصی غیرفعال شد. چت‌باکس به مدل‌های پیش‌فرض مدیر بازگشت.');
+            showNotification('کلید شخصی حذف گردید و سیستم به مدل‌های پیش‌فرض مدیر بازگشت.');
         }
 
         function updateCustomApiKeyBadgeUI() {
@@ -4253,6 +4923,8 @@
             } else if (tabId === 'adminTabPrompts') {
                 renderAdminCategories();
                 renderPendingPrompts();
+            } else if (tabId === 'adminTabSettings') {
+                loadCustomApiKeyFormValues('admin');
             }
         }
 
@@ -4297,7 +4969,12 @@
         // Auth & Modals
         function openModal(id) {
             const m = document.getElementById(id);
-            if (m) m.style.display = 'flex';
+            if (m) {
+                m.style.display = 'flex';
+                if (id === 'customApiKeyModal') {
+                    loadCustomApiKeyFormValues('modal');
+                }
+            }
         }
 
         function closeModal(id) {

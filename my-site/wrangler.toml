@@ -2,9 +2,10 @@ name = "mohamad"
 main = "./src/index.js"
 compatibility_date = "2026-09-14"
 
-# تنظیمات دایرکتوری فایل‌های استاتیک (سایت)
+# کلید اصلی برای رفع خطای سیستم Build خودکار Cloudflare Pages
+pages_build_output_dir = "./public"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
-html_handling = "auto-trailing-slash"
-not_found_handling = "single-page-app"
+run_worker_first = ["/api/*"]

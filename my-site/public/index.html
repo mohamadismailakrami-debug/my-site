@@ -2642,12 +2642,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label>آدرس اینترنتی تصویر نمونه (URL):</label>
-                    <input type="url" id="newPromptImageUrl" placeholder="https://images.unsplash.com/...">
+                    <label>تصویر نمونه (آپلود مستقیم فایل):</label>
+                    <input type="file" id="newPromptImageFile" accept="image/*" onchange="handlePromptImageFileChange(event)">
+                    <img id="newPromptImagePreview" src="" alt="پیش‌نمایش تصویر" style="display:none; max-width: 160px; max-height: 160px; margin-top: 8px; border-radius: 8px; object-fit: cover;">
                 </div>
 
                 <div class="form-group">
                     <label>دسته‌بندی‌ها: <span>*</span></label>
+                    <input type="text" id="newPromptCategorySearch" placeholder="جست‌وجوی دسته‌بندی..." oninput="filterNewPromptCategoryCheckboxes(this.value)" style="margin-bottom: 8px;">
                     <div class="category-checkboxes-container" id="newPromptCategoryCheckboxes">
                         <!-- Populated by JS -->
                     </div>
@@ -2673,10 +2675,12 @@
                 <img id="detailPromptImg" src="" alt="Prompt Preview" style="max-width: 100%; max-height: 260px; object-fit: contain;">
             </div>
 
+            <div class="cat-badges-wrap" id="detailPromptTagsWrap" style="justify-content: center; margin-bottom: 15px;"></div>
+
             <div class="form-group">
                 <label>متن اصلی پرامپت (برای کپی در هوش مصنوعی):</label>
                 <div style="position: relative;">
-                    <div id="detailPromptText" style="background: var(--prompt-text-bg); padding: 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.8; direction: ltr; text-align: left; word-break: break-word; user-select: all;"></div>
+                    <div id="detailPromptText" style="background: var(--prompt-text-bg); padding: 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.8; direction: ltr; text-align: left; word-break: break-word; user-select: all; max-height: 260px; overflow-y: auto;"></div>
                     <button type="button" class="btn-cat-action" onclick="copyDetailPromptText()" style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.5); color: white; padding: 4px 8px; border-radius: 5px;" title="کپی متن پرامپت"><i class="fa-regular fa-copy"></i></button>
                 </div>
             </div>
@@ -4225,7 +4229,24 @@
             document.getElementById('detailPromptTitle').innerText = p.title;
             document.getElementById('detailPromptImg').src = p.imageUrl || '';
             document.getElementById('detailPromptText').innerText = p.text;
-            
+
+            const tagsWrap = document.getElementById('detailPromptTagsWrap');
+            if (tagsWrap) {
+                tagsWrap.innerHTML = '';
+                (p.categories || []).forEach(c => {
+                    const span = document.createElement('span');
+                    span.className = 'prompt-badge-cat';
+                    span.innerText = c;
+                    tagsWrap.appendChild(span);
+                });
+                if (p.isRef) {
+                    const refSpan = document.createElement('span');
+                    refSpan.className = 'prompt-badge-ref';
+                    refSpan.innerText = 'تصویر مرجع';
+                    tagsWrap.appendChild(refSpan);
+                }
+            }
+
             const guideWrap = document.getElementById('detailPromptGuideWrap');
             const guideText = document.getElementById('detailPromptGuide');
             if (p.guide && p.guide.trim()) {
@@ -4251,18 +4272,65 @@
             });
         }
 
+        let newPromptImageDataUrl = '';
+
         function openAddPromptModal() {
             const container = document.getElementById('newPromptCategoryCheckboxes');
             if (container) {
                 const cats = getPromptCategories().filter(c => c !== 'همه');
                 container.innerHTML = cats.map(c => `
-                    <label class="cat-chip-label">
-                        <input type="checkbox" name="promptCats" value="${c}">
-                        <span>${c}</span>
+                    <label class="cat-chip-label" data-cat-label="${escapeHtml(c.toLowerCase())}">
+                        <input type="checkbox" name="promptCats" value="${escapeHtml(c)}">
+                        <span>${escapeHtml(c)}</span>
                     </label>
                 `).join('');
             }
+
+            const searchInput = document.getElementById('newPromptCategorySearch');
+            if (searchInput) searchInput.value = '';
+
+            const fileInput = document.getElementById('newPromptImageFile');
+            const preview = document.getElementById('newPromptImagePreview');
+            if (fileInput) fileInput.value = '';
+            if (preview) { preview.src = ''; preview.style.display = 'none'; }
+            newPromptImageDataUrl = '';
+
             openModal('addPromptModal');
+        }
+
+        function filterNewPromptCategoryCheckboxes(query) {
+            const container = document.getElementById('newPromptCategoryCheckboxes');
+            if (!container) return;
+            const q = query.trim().toLowerCase();
+            container.querySelectorAll('.cat-chip-label').forEach(label => {
+                const match = !q || (label.dataset.catLabel || '').includes(q);
+                label.style.display = match ? '' : 'none';
+            });
+        }
+
+        function handlePromptImageFileChange(event) {
+            const file = event.target.files && event.target.files[0];
+            const preview = document.getElementById('newPromptImagePreview');
+            if (!file) {
+                newPromptImageDataUrl = '';
+                if (preview) { preview.src = ''; preview.style.display = 'none'; }
+                return;
+            }
+            if (!file.type.startsWith('image/')) {
+                showNotification('لطفاً یک فایل تصویری معتبر انتخاب کنید', 'error');
+                event.target.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                newPromptImageDataUrl = reader.result;
+                if (preview) {
+                    preview.src = newPromptImageDataUrl;
+                    preview.style.display = 'block';
+                }
+            };
+            reader.onerror = () => showNotification('خطا در خواندن فایل تصویر', 'error');
+            reader.readAsDataURL(file);
         }
 
         function handleAddPromptSubmit(e) {
@@ -4270,7 +4338,6 @@
             const title = document.getElementById('newPromptTitle').value.trim();
             const text = document.getElementById('newPromptText').value.trim();
             const guide = document.getElementById('newPromptGuide').value.trim();
-            const imageUrl = document.getElementById('newPromptImageUrl').value.trim();
             const isRef = document.getElementById('newPromptIsRef').checked;
 
             const checkedCats = Array.from(document.querySelectorAll('input[name="promptCats"]:checked')).map(cb => cb.value);
@@ -4286,7 +4353,7 @@
                 title,
                 text,
                 guide,
-                imageUrl: imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600',
+                imageUrl: newPromptImageDataUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600',
                 categories: checkedCats,
                 isRef,
                 approved: isAdmin ? true : false,
@@ -4300,6 +4367,9 @@
 
             closeModal('addPromptModal');
             document.getElementById('addPromptForm').reset();
+            newPromptImageDataUrl = '';
+            const preview = document.getElementById('newPromptImagePreview');
+            if (preview) { preview.src = ''; preview.style.display = 'none'; }
 
             if (isAdmin) {
                 showNotification('پرامپت جدید بلافاصله منتشر شد');

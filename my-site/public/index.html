@@ -316,6 +316,7 @@
             overflow: hidden; 
             display: inline-block; 
             width: 100%;
+            cursor: pointer;
             break-inside: avoid; 
             -webkit-column-break-inside: avoid;
             page-break-inside: avoid;
@@ -2683,14 +2684,14 @@
             <div class="form-group">
                 <label>متن اصلی پرامپت (برای کپی در هوش مصنوعی):</label>
                 <div style="position: relative;">
-                    <div id="detailPromptText" style="background: var(--prompt-text-bg); padding: 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.8; direction: ltr; text-align: left; word-break: break-word; user-select: all; max-height: 260px; overflow-y: auto;"></div>
+                    <div id="detailPromptText" style="background: var(--prompt-text-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.8; direction: ltr; text-align: left; word-break: break-word; user-select: all; max-height: 220px; overflow-y: auto;"></div>
                     <button type="button" class="btn-cat-action" onclick="copyDetailPromptText()" style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.5); color: white; padding: 4px 8px; border-radius: 5px;" title="کپی متن پرامپت"><i class="fa-regular fa-copy"></i></button>
                 </div>
             </div>
 
             <div class="form-group" id="detailPromptGuideWrap">
                 <label>راهنمای استفاده و نکات (فارسی):</label>
-                <div id="detailPromptGuide" class="prompt-detail-guide" style="padding: 12px;"></div>
+                <div id="detailPromptGuide" class="prompt-detail-guide" style="background: var(--prompt-text-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.8; word-break: break-word; max-height: 220px; overflow-y: auto;"></div>
             </div>
 
             <button class="modal-submit" type="button" onclick="copyDetailPromptText()"><i class="fa-regular fa-copy"></i> کپی کامل متن پرامپت</button>
@@ -4201,6 +4202,7 @@
             filtered.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'prompt-card';
+                card.onclick = () => openPromptDetailModal(p.id);
                 card.innerHTML = `
                     <div class="prompt-card-img-wrap">
                         <img src="${escapeHtml(p.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600')}" alt="${escapeHtml(p.title)}" loading="lazy">
@@ -4209,15 +4211,15 @@
                             ${p.isRef ? '<span class="prompt-badge-ref">تصویر مرجع</span>' : ''}
                         </div>
                         <div class="prompt-top-actions">
-                            <button class="action-icon-btn" type="button" onclick="copyPromptDirect('${escapeJsString(p.text)}')" title="کپی پرامپت"><i class="fa-regular fa-copy"></i></button>
-                            <button class="action-icon-btn" type="button" onclick="openPromptDetailModal('${p.id}')" title="مشاهده کامل"><i class="fa-regular fa-eye"></i></button>
+                            <button class="action-icon-btn" type="button" onclick="event.stopPropagation(); copyPromptDirect('${escapeJsString(p.text)}')" title="کپی پرامپت"><i class="fa-regular fa-copy"></i></button>
+                            <button class="action-icon-btn" type="button" onclick="event.stopPropagation(); openPromptDetailModal('${p.id}')" title="مشاهده کامل"><i class="fa-regular fa-eye"></i></button>
                         </div>
                     </div>
                     <div class="prompt-card-body">
                         <div class="prompt-card-title">${escapeHtml(p.title)}</div>
                         <div class="prompt-card-text">${escapeHtml(p.text)}</div>
                         ${currentUser && currentUser.role === 'admin' ? `
-                            <button class="btn-delete-prompt" type="button" onclick="deletePromptByAdmin('${p.id}')"><i class="fa-solid fa-trash"></i> حذف پرامپت</button>
+                            <button class="btn-delete-prompt" type="button" onclick="event.stopPropagation(); deletePromptByAdmin('${p.id}')"><i class="fa-solid fa-trash"></i> حذف پرامپت</button>
                         ` : ''}
                     </div>
                 `;
@@ -4278,6 +4280,12 @@
         let newPromptImageDataUrl = '';
 
         function openAddPromptModal() {
+            if (!currentUser) {
+                showNotification('برای ثبت پرامپت جدید ابتدا باید وارد حساب کاربری خود شوید', 'error');
+                openModal('loginModal');
+                return;
+            }
+
             const container = document.getElementById('newPromptCategoryCheckboxes');
             if (container) {
                 const cats = getPromptCategories().filter(c => c !== 'همه');
@@ -4338,6 +4346,14 @@
 
         function handleAddPromptSubmit(e) {
             e.preventDefault();
+
+            if (!currentUser) {
+                showNotification('برای ثبت پرامپت باید وارد حساب کاربری خود شوید', 'error');
+                closeModal('addPromptModal');
+                openModal('loginModal');
+                return;
+            }
+
             const title = document.getElementById('newPromptTitle').value.trim();
             const text = document.getElementById('newPromptText').value.trim();
             const guide = document.getElementById('newPromptGuide').value.trim();

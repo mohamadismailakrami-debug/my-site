@@ -2,7 +2,9 @@ name = "mohamad"
 main = "./src/index.js"
 compatibility_date = "2026-09-14"
 
+# تنظیمات دایرکتوری فایل‌های استاتیک (سایت)
 [assets]
-directory = "."
+directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*"]
+html_handling = "auto-trailing-slash"
+not_found_handling = "single-page-app"
